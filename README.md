@@ -18,23 +18,22 @@
 
 ```
 whatsawesome/
-├── ux/          # UI/UX 设计工作区（设计文档 + 高保真原型）
-├── docs/        # 产品 / 架构 / 规划文档        （待建）
-├── backend/     # 华为云 FunctionGraph 函数等    （迭代一: Node Express API）
-├── frontend/    # 玩家端 + 管理端 SPA            （迭代一: Vue3 技能大厅/详情）
-├── agents/      # 多 Agent 协作配置 / 提示词     （待建）
-└── dev/         # 项目管理与过程交付件（规格/设计/任务清单/标签体系/QA截图）
+├── backend/          # 华为云 FunctionGraph 函数等    （迭代一: Node Express API）
+├── frontend/         # 玩家端 + 管理端 SPA            （迭代一: Vue3 技能大厅/详情）
+├── agents/           # 多 Agent 协作配置 / 提示词     （待建）
+└── for-agent-dev/    # Agent 协作交付件区（规格/设计/任务/标签体系 + ux/ 设计）
 ```
 
 ## 技术底座
 
-优先选用华为云能力：GaussDB（含向量检索）、FunctionGraph、OBS、盘古大模型（灵犀 AI 裁判）、CDN。详见 `ux/设计交付文档.md` 第 7 节落地映射。
+优先选用华为云能力：GaussDB（含向量检索）、FunctionGraph、OBS、盘古大模型（灵犀 AI 裁判）、CDN。详见 `for-agent-dev/ux/设计交付文档.md` 第 7 节落地映射。
 
 ## 快速预览
 
-- 玩家端原型：`ux/user.html`（玄夜仙穹 · 深色沉浸）
-- 管理端原型：`ux/admin.html`（琅嬛玉阁 · 浅色宣纸）
-- 设计交付文档：`ux/设计交付文档.md`
+- 玩家端原型：`for-agent-dev/ux/user.html`（玄夜仙穹 · 深色沉浸）
+- 管理端原型：`for-agent-dev/ux/admin.html`（琅嬛玉阁 · 浅色宣纸）
+- 设计交付文档：`for-agent-dev/ux/设计交付文档.md`
+- 项目管理交付件：`for-agent-dev/`（规格/设计/任务清单/标签体系）
 
 ---
 
