@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whats Awesome · 琅嬛玉阁 · 管理端</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════ 琅嬛玉阁 · 管理端设计系统 ═══════════════════════ */
+:root{
+  /* 宣纸基调 */
+  --paper:#F3EFE4; --paper-2:#FAF7EF; --paper-3:#FFFDF7;
+  --ink:#26282E; --ink-2:#5C5F6A; --ink-3:#93969F;
+  --line:#E4DECD; --line-2:#D8D1BC;
+  /* 印章主色 */
+  --seal:#C2452F; --seal-deep:#9E3523; --seal-soft:rgba(194,69,47,.08);
+  --gold:#B08A3E; --gold-soft:rgba(176,138,62,.1);
+  --jade:#4E7A6A; --azure:#3E5A76; --violet:#6B5B95;
+  --ok:#3E7D5E; --warn:#B08A3E; --err:#C2452F;
+  /* 八境（沿用玩家端，转浅色适配） */
+  --r1:#7A7F8A; --r2:#3E8A6A; --r3:#3E74A8; --r4:#2E8E9E;
+  --r5:#A8823C; --r6:#B85C46; --r7:#6B5B95; --r8:#C2962E;
+  --font-title:"KaiTi","STKaiti","楷体","Noto Serif SC","SimSun",serif;
+  --font-body:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --font-display:"Unbounded","Noto Serif SC","KaiTi",serif;
+  --shadow:0 14px 40px -16px rgba(60,50,20,.18);
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:14px;
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(1200px 500px at 80% -10%,rgba(176,138,62,.07),transparent 60%),
+    radial-gradient(900px 500px at -10% 110%,rgba(194,69,47,.05),transparent 60%);
+}
+::selection{background:rgba(194,69,47,.18)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#CFC7AE;border-radius:99px;border:2px solid var(--paper)}
+::-webkit-scrollbar-thumb:hover{background:#B9B094}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ═══════════ 登录页 ═══════════ */
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login-card{
+  width:min(420px,100%);text-align:center;padding:48px 44px;border-radius:20px;
+  background:var(--paper-3);border:1px solid var(--line);
+  box-shadow:var(--shadow);position:relative;
+}
+.login-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--seal),var(--gold),var(--seal))}
+.login-card .seal{
+  width:74px;height:74px;margin:0 auto 20px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--line-2);background:linear-gradient(150deg,var(--paper-3),var(--paper));
+  position:relative;
+}
+.login-card .seal::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1px dashed rgba(176,138,62,.5)}
+.login-card .seal span{font-family:var(--font-title);font-size:32px;color:var(--seal);font-weight:900}
+.login-card h1{font-family:var(--font-title);font-size:22px;letter-spacing:.22em;color:var(--ink)}
+.login-card .sub{font-size:12px;color:var(--ink-3);letter-spacing:.3em;margin:10px 0 34px}
+.field{text-align:left;margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:7px;letter-spacing:.08em}
+.field input{
+  width:100%;padding:12px 15px;border-radius:10px;border:1px solid var(--line-2);
+  background:var(--paper-2);font-size:14px;color:var(--ink);transition:all .22s;
+}
+.field input:focus{outline:none;border-color:var(--seal);box-shadow:0 0 0 3px var(--seal-soft);background:#fff}
+.field .hint{font-size:11px;color:var(--ink-3);margin-top:6px;letter-spacing:.05em}
+.btn-admin{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 30px;border-radius:10px;font-size:14px;font-weight:700;transition:all .25s;
+}
+.btn-seal{
+  background:var(--seal);color:#FDF6F0;box-shadow:0 8px 22px -8px rgba(194,69,47,.6);
+  width:100%;
+}
+.btn-seal:hover{background:var(--seal-deep);transform:translateY(-1px)}
+.btn-seal:active{transform:translateY(0)}
+.login-card .foot{margin-top:22px;font-size:11.5px;color:var(--ink-3);display:flex;justify-content:center;gap:14px}
+.login-card .foot a{color:var(--seal);cursor:pointer}
+.login-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.2em;color:var(--gold);border:1px solid var(--line-2);padding:4px 12px;border-radius:99px;margin-bottom:26px}
+
+/* ═══════════ 布局 ═══════════ */
+.app{display:none;min-height:100vh}
+.app.on{display:block}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:228px;z-index:50;
+  background:linear-gradient(180deg,#FBF8F0,#F4EFE2);
+  border-right:1px solid var(--line);padding:24px 16px;
+  display:flex;flex-direction:column;
+}
+.side-brand{display:flex;align-items:center;gap:11px;padding:4px 10px 22px;border-bottom:1px dashed var(--line);margin-bottom:18px}
+.side-brand .seal{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--seal);color:#fff;font-family:var(--font-title);font-size:19px;font-weight:900;box-shadow:0 6px 16px -6px rgba(194,69,47,.6)}
+.side-brand .bn{font-family:var(--font-display);font-size:13px;font-weight:700;letter-spacing:.05em}
+.side-brand .bs{font-size:9.5px;letter-spacing:.28em;color:var(--ink-3);margin-top:2px}
+.side-nav{flex:1;display:flex;flex-direction:column;gap:3px}
+.side-nav .grp{font-size:10px;letter-spacing:.3em;color:var(--ink-3);padding:14px 12px 6px}
+.side-nav a{
+  display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;
+  font-size:13.5px;color:var(--ink-2);transition:all .2s;border:1px solid transparent;
+}
+.side-nav a i{font-style:normal;width:18px;text-align:center;color:var(--ink-3)}
+.side-nav a:hover{background:rgba(176,138,62,.08);color:var(--ink)}
+.side-nav a.active{background:var(--seal);color:#FDF6F0;box-shadow:0 6px 16px -6px rgba(194,69,47,.55)}
+.side-nav a.active i{color:#FDF6F0}
+.side-nav a .badge{
+  margin-left:auto;font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--seal-soft);
+  color:var(--seal);font-weight:700;
+}
+.side-nav a.active .badge{background:rgba(255,255,255,.2);color:#fff}
+.side-foot{padding:14px 12px;border-top:1px dashed var(--line);font-size:11px;color:var(--ink-3);line-height:1.8}
+.side-foot b{color:var(--ink-2);font-weight:600}
+
+.main{margin-left:228px;padding:0 34px 60px}
+.topbar{
+  display:flex;align-items:center;gap:16px;padding:20px 0;position:sticky;top:0;z-index:40;
+  background:linear-gradient(180deg,var(--paper) 70%,transparent);backdrop-filter:blur(8px);
+}
+.topbar h1{font-family:var(--font-title);font-size:22px;letter-spacing:.1em;flex:1}
+.topbar .crumb{font-size:11.5px;color:var(--ink-3);letter-spacing:.12em}
+.topbar .crumb b{color:var(--gold);font-weight:600}
+.admin-chip{
+  display:flex;align-items:center;gap:10px;padding:6px 8px 6px 14px;border-radius:99px;
+  border:1px solid var(--line-2);background:var(--paper-3);cursor:pointer;
+}
+.admin-chip .role{font-size:11.5px;font-weight:700}
+.admin-chip .role small{display:block;font-weight:400;color:var(--ink-3);font-size:10px}
+.admin-chip .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(150deg,#D94F33,#9E3523);color:#fff;display:grid;place-items:center;font-family:var(--font-title);font-weight:900}
+
+/* ═══════════ 统计卡 ═══════════ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin:8px 0 26px}
+.stat-card{
+  background:var(--paper-3);border:1px solid var(--line);border-radius:var(--r);
+  padding:20px 22px;position:relative;overflow:hidden;transition:all .25s;
+}
+.stat-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.stat-card .sc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.stat-card .sc-ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px}
+.stat-card .sc-num{font-family:var(--font-display);font-size:30px;font-weight:900;letter-spacing:-.02em}
+.stat-card .sc-lbl{font-size:12px;color:var(--ink-2);margin-top:3px}
+.stat-card .sc-trend{font-size:11px;padding:3px 9px;border-radius:99px;font-weight:700}
+.trend-up{color:var(--ok);background:rgba(62,125,94,.1)}
+.trend-warn{color:var(--warn);background:var(--gold-soft)}
+.trend-err{color:var(--err);background:var(--seal-soft)}
+.sc-seal{background:var(--seal-soft);color:var(--seal)}
+.sc-gold{background:var(--gold-soft);color:var(--gold)}
+.sc-jade{background:rgba(78,122,106,.1);color:var(--jade)}
+.sc-azure{background:rgba(62,90,118,.1);color:var(--azure)}
+
+/* ═══════════ 面板 ═══════════ */
+.panel{background:var(--paper-3);border:1px solid var(--line);border-radius:16px;margin-bottom:22px;overflow:hidden}
+.panel-head{
+  display:flex;align-items:center;gap:12px;padding:17px 22px;border-bottom:1px solid var(--line);
+}
+.panel-head h3{font-size:15px;font-weight:700;flex:1;display:flex;align-items:center;gap:10px}
+.panel-head h3 .ph-ico{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;background:var(--seal-soft);color:var(--seal)}
+.panel-head .ph-side{display:flex;gap:10px;align-items:center}
+.panel-body{padding:18px 22px}
+
+/* ═══════════ 表格 ═══════════ */
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{
+  text-align:left;font-size:11px;letter-spacing:.14em;color:var(--ink-3);font-weight:600;
+  padding:11px 14px;border-bottom:1px solid var(--line-2);white-space:nowrap;
+}
+.tbl td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tbody tr{transition:background .18s}
+.tbl tbody tr:hover{background:rgba(176,138,62,.045)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl .row-name{font-weight:600;font-size:13.5px}
+.tbl .row-sub{font-size:11px;color:var(--ink-3);margin-top:2px}
+.cell-realm{display:inline-flex;align-items:center;gap:7px;padding:3px 11px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.cell-realm .orb{width:7px;height:7px;border-radius:50%}
+.imp-stars{color:var(--gold);font-size:11px;letter-spacing:1px}
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.st-new{color:var(--seal);background:var(--seal-soft)}
+.st-open{color:var(--ok);background:rgba(62,125,94,.1)}
+.st-done{color:var(--ink-2);background:rgba(92,95,106,.09)}
+.st-pause{color:var(--warn);background:var(--gold-soft)}
+.op-btn{
+  padding:6px 13px;border-radius:8px;font-size:12px;font-weight:600;transition:all .2s;
+  border:1px solid transparent;display:inline-flex;gap:5px;align-items:center;
+}
+.op-primary{color:var(--seal);background:var(--seal-soft)}
+.op-primary:hover{background:var(--seal);color:#fff}
+.op-ghost{color:var(--ink-2);border-color:var(--line-2)}
+.op-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.op-warn{color:var(--warn);background:var(--gold-soft)}
+.op-warn:hover{background:var(--gold);color:#fff}
+.op-row{display:flex;gap:6px}
+
+/* ═══════════ 标签/徽章 ═══════════ */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px;background:var(--paper);border:1px solid var(--line-2);color:var(--ink-2);white-space:nowrap}
+.chip.x{color:var(--seal);border-color:transparent;background:transparent;cursor:pointer;font-size:12px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line)}
+.filter-row .fsearch{
+  display:flex;align-items:center;gap:8px;flex:1;min-width:200px;max-width:320px;
+  background:var(--paper-2);border:1px solid var(--line-2);border-radius:9px;padding:9px 14px;
+}
+.filter-row .fsearch input{flex:1;border:none;outline:none;background:none;font-size:13px;color:var(--ink)}
+.filter-row .fsearch svg{width:14px;height:14px;stroke:var(--ink-3)}
+
+/* 八境分布条 */
+.realm-dist{display:flex;flex-direction:column;gap:12px;padding:6px 0}
+.rd-row .rd-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.rd-row .rd-head .nm{display:flex;gap:8px;align-items:center;font-weight:600}
+.rd-row .rd-head .nm .orb{width:8px;height:8px;border-radius:50%}
+.rd-row .rd-bar{height:8px;border-radius:99px;background:var(--paper);overflow:hidden;border:1px solid var(--line)}
+.rd-row .rd-bar i{display:block;height:100%;border-radius:99px;transition:width 1s cubic-bezier(.22,.61,.36,1)}
+
+/* 爬取流 */
+.crawl-item{display:flex;gap:14px;padding:13px 4px;border-bottom:1px dashed var(--line);align-items:flex-start}
+.crawl-item:last-child{border:none}
+.crawl-item .ci-src{flex-shrink:0;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff}
+.crawl-item .ci-body{flex:1;min-width:0}
+.crawl-item .ci-title{font-size:13px;font-weight:600;line-height:1.5}
+.crawl-item .ci-meta{font-size:11px;color:var(--ink-3);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+.crawl-item .ci-acts{display:flex;gap:6px;flex-shrink:0}
+
+/* 编辑抽屉 */
+.drawer-mask{position:fixed;inset:0;z-index:100;display:none;background:rgba(40,32,16,.35);backdrop-filter:blur(3px)}
+.drawer-mask.on{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.drawer{
+  position:fixed;top:0;right:-560px;bottom:0;width:min(560px,94vw);z-index:110;
+  background:var(--paper-3);border-left:1px solid var(--line);box-shadow:-24px 0 60px -20px rgba(40,32,16,.35);
+  transition:right .42s cubic-bezier(.22,.61,.36,1);display:flex;flex-direction:column;
+}
+.drawer.on{right:0}
+.drawer-head{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.drawer-head h2{font-family:var(--font-title);font-size:19px;letter-spacing:.08em;flex:1}
+.drawer-head .x{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:15px;color:var(--ink-3);transition:all .2s}
+.drawer-head .x:hover{background:var(--seal-soft);color:var(--seal)}
+.drawer-body{flex:1;overflow-y:auto;padding:24px 26px}
+.drawer-foot{padding:18px 26px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:var(--paper)}
+.f-label{display:block;font-size:12px;color:var(--ink-2);margin:18px 0 7px;letter-spacing:.06em;font-weight:600}
+.f-label:first-child{margin-top:0}
+.f-input{
+  width:100%;padding:11px 14px;border-radius:9px;border:1px solid var(--line-2);
+  background:var(--paper-2);font-size:13.5px;color:var(--ink);transition:all .2s;
+}
+.f-input:focus{outline:none;border-color:var(--seal);box-shadow:0 0 0 3px var(--seal-soft);background:#fff}
+textarea.f-input{resize:vertical;min-height:88px;line-height:1.7}
+.f-chips{display:flex;gap:8px;flex-wrap:wrap}
+.f-chip{padding:6px 14px;border-radius:99px;font-size:12.5px;border:1px solid var(--line-2);cursor:pointer;transition:all .2s;color:var(--ink-2)}
+.f-chip:hover{border-color:var(--gold);color:var(--gold)}
+.f-chip.sel{background:var(--seal);border-color:var(--seal);color:#fff;font-weight:600}
+.f-range{display:flex;align-items:center;gap:14px}
+.f-range input[type=range]{flex:1;accent-color:var(--seal)}
+.f-range .val{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--seal);min-width:30px;text-align:center}
+.realm-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.realm-picker .rp-item{
+  padding:11px 14px;border-radius:9px;border:1px solid var(--line-2);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;gap:9px;font-size:12.5px;
+}
+.realm-picker .rp-item .orb{width:9px;height:9px;border-radius:50%}
+.realm-picker .rp-item.sel{border-color:var(--seal);background:var(--seal-soft);font-weight:600}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(90px);z-index:300;
+  padding:13px 26px;border-radius:99px;font-size:13.5px;font-weight:700;
+  background:var(--seal);color:#fff;box-shadow:0 14px 36px -8px rgba(194,69,47,.6);
+  transition:transform .5s cubic-bezier(.22,.61,.36,1);opacity:0;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media (max-width:980px){
+  .sidebar{width:74px;padding:20px 10px}
+  .sidebar .bn,.sidebar .bs,.side-nav .grp,.side-nav a span,.side-nav a .badge,.side-foot{display:none}
+  .side-brand{border-bottom:none;justify-content:center;padding:4px 0 14px}
+  .side-nav a{justify-content:center;padding:11px 0}
+  .main{margin-left:74px;padding:0 20px 50px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+/* ═══════════ 玩家表徽章 ═══════════ */
+.medal-mini{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-title);font-size:14px;color:#fff;box-shadow:0 4px 10px -4px rgba(0,0,0,.35);margin-right:-8px;border:2px solid var(--paper-3)}
+.bar-cell{display:flex;align-items:center;gap:10px}
+.bar-cell .btr{flex:1;max-width:130px;height:7px;border-radius:99px;background:var(--paper);overflow:hidden;border:1px solid var(--line)}
+.bar-cell .btr i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--seal));border-radius:99px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ 管理登录 ═══════════ -->
+<div class="login-wrap" id="login-view">
+  <div class="login-card">
+    <div class="seal"><span>琅</span></div>
+    <h1>琅嬛玉阁</h1>
+    <div class="sub">WHATS AWESOME · 仙府中枢</div>
+    <div class="login-badge">◈ 仅限掌印者与书记官</div>
+    <div class="field">
+      <label>掌印令牌 / 账号</label>
+      <input id="adm-user" placeholder="admin / shuji" value="admin">
+    </div>
+    <div class="field">
+      <label>密令</label>
+      <input id="adm-pass" type="password" placeholder="••••••••">
+      <div class="hint">原型演示：任意密码均可进入，真实系统走管理员鉴权</div>
+    </div>
+    <button class="btn-admin btn-seal" onclick="enterAdmin()">◈ 踏入玉阁</button>
+    <div class="foot"><a onclick="toast('请联系掌印者开通账号')">申请权限</a><span style="color:var(--line-2)">|</span><a onclick="toast('原型演示：安全与审计功能开发中')">安全审计</a></div>
+  </div>
+</div>
+
+<!-- ═══════════ 主应用 ═══════════ -->
+<div class="app" id="app-view">
+  <aside class="sidebar">
+    <div class="side-brand">
+      <div class="seal">琅</div>
+      <div><div class="bn">WHATS AWESOME</div><div class="bs">仙府中枢 · ADMIN</div></div>
+    </div>
+    <nav class="side-nav">
+      <div class="grp">仙府总览</div>
+      <a class="active" data-view="dash" onclick="go('dash')"><i>◈</i><span>总览玉鉴</span></a>
+      <div class="grp">灵犀司职</div>
+      <a data-view="crawl" onclick="go('crawl')"><i>◇</i><span>灵犀爬取</span><span class="badge">12</span></a>
+      <a data-view="skills" onclick="go('skills')"><i>▣</i><span>技能管理</span><span class="badge">4</span></a>
+      <a data-view="news" onclick="go('news')"><i>✉</i><span>灵讯管理</span></a>
+      <div class="grp">仙籍司职</div>
+      <a data-view="players" onclick="go('players')"><i>☯</i><span>玩家仙籍</span></a>
+      <a data-view="medals" onclick="go('medals')"><i>✦</i><span>勋章铸造</span></a>
+      <div class="grp">系统</div>
+      <a onclick="toast('开发中')"><i>⚙</i><span>府库设置</span></a>
+    </nav>
+    <div class="side-foot">
+      <b>灵犀 AI</b> 每日自动爬取<br>
+      上次巡游：今日 07:02<br>
+      <span style="color:var(--ok)">● 爬取管道运行中</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">琅嬛玉阁 / <b>总览玉鉴</b></div>
+      <h1 id="page-title" style="font-size:20px">总览玉鉴</h1>
+      <div class="admin-chip">
+        <div class="role">掌印者 <small>青云真人 · 管理员</small></div>
+        <div class="avatar">云</div>
+      </div>
+    </div>
+
+    <!-- ═══════ Dashboard ═══════ -->
+    <section class="page" id="page-dash">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-seal">◇</div><span class="sc-trend trend-up">▲ 18%</span></div><div class="sc-num">1,286</div><div class="sc-lbl">已收录技能 · 总</div></div>
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-gold">✉</div><span class="sc-trend trend-warn">12 待审</span></div><div class="sc-num">47</div><div class="sc-lbl">今日灵犀爬取</div></div>
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-jade">☯</div><span class="sc-trend trend-up">▲ 214</span></div><div class="sc-num">8,904</div><div class="sc-lbl">入道玩家 · 活跃 3,221</div></div>
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-azure">✦</div><span class="sc-trend trend-up">▲ 32%</span></div><div class="sc-num">386</div><div class="sc-lbl">今日点亮判定</div></div>
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-seal">✧</div><span class="sc-trend trend-up">▲ 9</span></div><div class="sc-num">342</div><div class="sc-lbl">试炼副本 · AI 生成</div></div>
+        <div class="stat-card"><div class="sc-top"><div class="sc-ico sc-gold">◈</div><span class="sc-trend trend-err">≈ 0.8s</span></div><div class="sc-num">99.96%</div><div class="sc-lbl">判定服务可用率</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:22px" class="dash-grid">
+        <div>
+          <div class="panel">
+            <div class="panel-head"><h3><span class="ph-ico">◇</span>灵犀今日爬取</h3>
+              <div class="ph-side"><span class="chip">自动 · 每日 06:00</span><button class="op-btn op-primary" onclick="toast('灵犀已开始巡游爬取')">⟳ 立即爬取</button></div></div>
+            <div class="panel-body" style="padding-top:8px" id="crawl-feed"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3><span class="ph-ico">▣</span>待露出审核</h3>
+              <div class="ph-side"><span class="chip">4 条待决策</span></div></div>
+            <div style="overflow-x:auto"><table class="tbl">
+              <thead><tr><th>技能</th><th>境界</th><th>重要性</th><th>来源</th><th style="text-align:right">操作</th></tr></thead>
+              <tbody id="review-body"></tbody>
+            </table></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:22px">
+          <div class="panel">
+            <div class="panel-head"><h3><span class="ph-ico">☯</span>玩家境界分布</h3><div class="ph-side"><span class="chip">8,904 人</span></div></div>
+            <div class="panel-body"><div class="realm-dist" id="realm-dist"></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3><span class="ph-ico">✦</span>今日点亮 TOP</h3></div>
+            <div class="panel-body" style="padding-top:10px" id="hot-skills"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ 灵犀爬取 ═══════ -->
+    <section class="page" id="page-crawl" style="display:none">
+      <div class="panel">
+        <div class="filter-row">
+          <div class="fsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="搜索爬取条目…"></div>
+          <span class="chip">今日 06:00 自动</span><span class="chip">共 47 条</span><span class="chip">来源 9 家</span>
+          <button class="op-btn op-primary" style="margin-left:auto" onclick="toast('灵犀重新爬取中…')">⟳ 立即巡游</button>
+        </div>
+        <div class="panel-body" style="padding:10px 22px" id="crawl-list"></div>
+      </div>
+    </section>
+
+    <!-- ═══════ 技能管理 ═══════ -->
+    <section class="page" id="page-skills" style="display:none">
+      <div class="panel">
+        <div class="filter-row">
+          <div class="fsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="搜索技能 / 厂商…"></div>
+          <div id="state-chips">
+            <span class="chip" style="background:var(--seal);color:#fff;border-color:var(--seal)">全部 1,286</span>
+            <span class="chip">已露出 1,241</span>
+            <span class="chip">待审核 12</span>
+            <span class="chip">已下架 33</span>
+          </div>
+          <button class="op-btn op-primary" style="margin-left:auto" onclick="openDrawer()">＋ 人工录入技能</button>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl">
+          <thead><tr><th>技能 / 厂商</th><th>领域</th><th>境界 Boss</th><th>重要性</th><th>状态</th><th style="text-align:right">操作</th></tr></thead>
+          <tbody id="skill-tbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ═══════ 灵讯管理 ═══════ -->
+    <section class="page" id="page-news" style="display:none">
+      <div class="panel">
+        <div class="filter-row">
+          <div class="fsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="搜索灵讯…"></div>
+          <span class="chip">今日 47</span><span class="chip">已关联技能 18</span>
+          <button class="op-btn op-primary" style="margin-left:auto" onclick="toast('灵犀开始撰写今日灵讯')">✎ 灵犀撰写</button>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl">
+          <thead><tr><th>灵讯标题</th><th>来源</th><th>关联技能</th><th>状态</th><th style="text-align:right">操作</th></tr></thead>
+          <tbody id="news-tbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ═══════ 玩家仙籍 ═══════ -->
+    <section class="page" id="page-players" style="display:none">
+      <div class="panel">
+        <div class="filter-row">
+          <div class="fsearch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input placeholder="搜索道号 / GitCode…"></div>
+          <span class="chip">活跃 3,221</span><span class="chip">筑基以上 1,240</span>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl">
+          <thead><tr><th>道号</th><th>境界</th><th>点亮</th><th>勋章</th><th>最近活跃</th><th style="text-align:right">操作</th></tr></thead>
+          <tbody id="player-tbody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ═══════ 勋章铸造 ═══════ -->
+    <section class="page" id="page-medals" style="display:none">
+      <div class="panel">
+        <div class="panel-head"><h3><span class="ph-ico">✦</span>勋章模板库</h3><div class="ph-side"><button class="op-btn op-primary" onclick="toast('铸造新勋章（原型占位）')">＋ 铸造新章</button></div></div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px" id="medal-grid-admin"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ═══════════ 技能编辑抽屉 ═══════════ -->
+<div class="drawer-mask" id="drawer-mask" onclick="if(event.target===this)closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="drawer-title">编辑功法</h2>
+    <button class="x" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <label class="f-label">功法名称</label>
+    <input class="f-input" value="AWS Bedrock Agent 编排" id="f-name">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div><label class="f-label">发布方</label><input class="f-input" value="AWS" id="f-vendor"></div>
+      <div><label class="f-label">技术领域</label>
+        <select class="f-input" id="f-domain"><option>大模型</option><option selected>Agent</option><option>云原生</option><option>Serverless</option><option>数据库</option><option>推理部署</option><option>前端工程</option><option>DevOps</option><option>AI编程</option></select></div>
+    </div>
+    <label class="f-label">简介</label>
+    <textarea class="f-input">用 Bedrock Agents 编排多步骤任务，接入知识库、Lambda 与 API，构建企业级自主智能体。</textarea>
+
+    <label class="f-label">难度 · Boss 境界</label>
+    <div class="realm-picker" id="realm-picker"></div>
+
+    <label class="f-label">Boss 等级（1–100）</label>
+    <div class="f-range">
+      <input type="range" min="1" max="100" value="52" id="f-lv" oninput="document.getElementById('f-lv-v').textContent=this.value">
+      <span class="val" id="f-lv-v">52</span>
+    </div>
+
+    <label class="f-label">灵犀鉴重要性（满分 10）</label>
+    <div class="f-range">
+      <input type="range" min="0" max="10" value="10" id="f-imp" oninput="document.getElementById('f-imp-v').textContent=this.value">
+      <span class="val" id="f-imp-v">10</span>
+    </div>
+
+    <label class="f-label">技能标签</label>
+    <div class="f-chips" id="f-tags">
+      <span class="chip sel">Agent</span><span class="chip sel">大模型</span><span class="chip">云原生</span><span class="chip">Serverless</span><span class="chip">向量检索</span><span class="chip">AI编程</span>
+    </div>
+
+    <label class="f-label">露出状态</label>
+    <div style="display:flex;gap:8px">
+      <span class="status-pill st-open">已露出 · 玩家可见</span>
+      <span class="chip">点亮数 2,341</span><span class="chip">判定通过率 78%</span>
+    </div>
+
+    <label class="f-label">灵犀判定逻辑备注</label>
+    <textarea class="f-input">判定要求：提交运行截图 + 日志；MCP 通道调用 judge_submit_skill 自动判定；核验关键词含 create_agent / ActionGroup。</textarea>
+  </div>
+  <div class="drawer-foot">
+    <button class="btn-admin" style="background:var(--paper-2);border:1px solid var(--line-2)" onclick="closeDrawer()">取消</button>
+    <button class="btn-admin btn-seal" style="width:auto;padding:12px 26px" onclick="toast('已保存 · 技能将即时生效')">◈ 保存功法</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════ 数据 ═══════════ */
+const REALMS=[
+  {id:'r1',name:'炼气期',lv:[1,10],color:'var(--r1)'},{id:'r2',name:'筑基期',lv:[11,20],color:'var(--r2)'},
+  {id:'r3',name:'结晶期',lv:[21,30],color:'var(--r3)'},{id:'r4',name:'具灵期',lv:[31,40],color:'var(--r4)'},
+  {id:'r5',name:'悟道期',lv:[41,50],color:'var(--r5)'},{id:'r6',name:'羽化期',lv:[51,60],color:'var(--r6)'},
+  {id:'r7',name:'登仙期',lv:[61,70],color:'var(--r7)'},{id:'r8',name:'神魔期',lv:[71,100],color:'var(--r8)'},
+];
+function realmOf(lv){for(const r of REALMS)if(lv>=r.lv[0]&&lv<=r.lv[1])return r;return REALMS[7]}
+function realmBadge(lv){
+  const r=realmOf(lv);
+  return `<span class="cell-realm" style="color:${r.color};background:color-mix(in srgb,${r.color} 9%,transparent);border:1px solid color-mix(in srgb,${r.color} 40%,transparent)"><span class="orb" style="background:${r.color};box-shadow:0 0 6px ${r.color}"></span>${r.name} · Lv.${lv}</span>`;
+}
+const SRCS=[{n:'Huawei',c:'#C7000B'},{n:'AWS',c:'#E8880D'},{n:'Google',c:'#2E7D32'},{n:'Azure',c:'#0F6CBD'},{n:'Alibaba',c:'#FF6A00'},{n:'Vercel',c:'#111'},{n:'GitHub',c:'#24292F'},{n:'Tencent',c:'#0E5CAB'},{n:'DeepSeek',c:'#4D6BFE'}];
+
+const SKILLS=[
+  {id:'s1',name:'Gemini 2.5 Pro 微调与蒸馏',vendor:'Google Cloud',domain:'大模型',lv:45,imp:9,st:'open',lit:231},
+  {id:'s2',name:'AWS Bedrock Agent 编排',vendor:'AWS',domain:'Agent',lv:52,imp:10,st:'open',lit:2341},
+  {id:'s3',name:'华为云 GaussDB 向量检索',vendor:'Huawei Cloud',domain:'数据库',lv:38,imp:9,st:'open',lit:1867},
+  {id:'s4',name:'Azure AI Foundry Agent',vendor:'Microsoft Azure',domain:'Agent',lv:28,imp:8,st:'open',lit:903},
+  {id:'s5',name:'阿里云 PAI-EAS 一键部署 LLM',vendor:'Alibaba Cloud',domain:'推理部署',lv:24,imp:8,st:'open',lit:1122},
+  {id:'s6',name:'Vercel AI SDK 构建 AI 应用',vendor:'Vercel',domain:'前端工程',lv:17,imp:9,st:'open',lit:1899},
+  {id:'s7',name:'GitHub Copilot Extensions',vendor:'GitHub',domain:'AI编程',lv:21,imp:8,st:'open',lit:764},
+  {id:'s8',name:'华为云 FunctionGraph 函数计算',vendor:'Huawei Cloud',domain:'Serverless',lv:22,imp:7,st:'open',lit:982},
+  {id:'s9',name:'DeepSeek Function Calling 实战',vendor:'DeepSeek',domain:'大模型',lv:15,imp:9,st:'open',lit:3012},
+  {id:'s10',name:'LangGraph 状态机 Agent',vendor:'LangChain',domain:'Agent',lv:42,imp:9,st:'pause',lit:656},
+  {id:'s11',name:'K8s Operator 开发入门',vendor:'CNCF',domain:'云原生',lv:55,imp:7,st:'open',lit:388},
+  {id:'s12',name:'腾讯云 TCCLI 自动化运维',vendor:'Tencent Cloud',domain:'DevOps',lv:9,imp:5,st:'open',lit:1432},
+];
+const CRAWL=[
+  {src:'Huawei',t:'华为云 CodeArts 发布 AI 编程助手 Pro 版',lv:26,imp:7,tag:'AI编程',st:'new'},
+  {src:'AWS',t:'Amazon Bedrock 新增 Nova 多模态微调',lv:54,imp:9,tag:'大模型',st:'new'},
+  {src:'Google',t:'Vertex AI 支持 Gemini 3 蒸馏工具链',lv:48,imp:9,tag:'大模型',st:'new'},
+  {src:'Azure',t:'AI Foundry 上线 Agent Service 公测',lv:31,imp:8,tag:'Agent',st:'new'},
+  {src:'Alibaba',t:'PAI-EAS 支持 FP8 量化部署提速 40%',lv:26,imp:7,tag:'推理部署',st:'new'},
+  {src:'Vercel',t:'AI SDK 4.0 发布本地模型运行时',lv:19,imp:9,tag:'前端工程',st:'new'},
+  {src:'GitHub',t:'Copilot Extensions 开放技能市场',lv:23,imp:8,tag:'AI编程',st:'new'},
+  {src:'Tencent',t:'TCCLI 支持交互式参数补全',lv:8,imp:4,tag:'DevOps',st:'new'},
+  {src:'DeepSeek',t:'DeepSeek-FC 轻量函数调用模型发布',lv:14,imp:8,tag:'大模型',st:'new'},
+];
+const NEWS=[
+  {t:'OpenAI 发布 GPT-5.5 系列，函数调用成本下降 60%',src:'OpenAI',link:'DeepSeek FC 实战',st:'pub'},
+  {t:'华为云 GaussDB 向量检索新版本上线 HNSW 混合索引',src:'Huawei',link:'GaussDB 向量检索',st:'pub'},
+  {t:'AWS Bedrock 推出 Multi-Agent Collaboration',src:'AWS',link:'Bedrock Agent 编排',st:'pub'},
+  {t:'Vercel AI SDK 4.0 发布，新增本地模型与 Agent 运行时',src:'Vercel',link:'Vercel AI SDK',st:'draft'},
+  {t:'Kubernetes 1.33 发布，增强边缘与 AI 工作负载',src:'CNCF',link:'',st:'draft'},
+  {t:'Meta 开源 Llama 4 多模态系列',src:'Meta',link:'',st:'pub'},
+];
+const PLAYERS=[
+  {name:'墨白',git:'mobai',lv:15,lit:28,medals:11,last:'8 分钟前'},
+  {name:'云中子',git:'cloudseed',lv:38,lit:64,medals:19,last:'26 分钟前'},
+  {name:'青莲剑仙',git:'lotus',lv:22,lit:35,medals:13,last:'1 小时前'},
+  {name:'无涯',git:'wuya',lv:9,lit:11,medals:4,last:'3 小时前'},
+  {name:'听风',git:'tingfeng',lv:52,lit:87,medals:26,last:'5 小时前'},
+  {name:'拾一',git:'shiyi',lv:5,lit:3,medals:1,last:'1 天前'},
+];
+const MEDAL_ADMIN=[
+  {sigil:'基',name:'筑基初成',cond:'点亮任一技能',c:'#3E8A6A'},
+  {sigil:'云',name:'云海行者',cond:'点亮 3 家云厂商',c:'#3E74A8'},
+  {sigil:'剑',name:'剑指神魔',cond:'点亮 Lv70+',c:'#C2962E'},
+  {sigil:'百',name:'百炼成钢',cond:'点亮 100 技能',c:'#A8823C'},
+  {sigil:'隐',name:'暗夜灵犀',cond:'深夜提交 10 次',c:'#6B5B95'},
+  {sigil:'玄',name:'玄门正宗',cond:'连续修行 30 天',c:'#7A7F8A'},
+];
+
+/* ═══════════ 渲染 ═══════════ */
+function renderCrawlFeed(){
+  document.getElementById('crawl-feed').innerHTML=CRAWL.slice(0,5).map(c=>{
+    const s=SRCS.find(x=>x.n===c.src);
+    return `<div class="crawl-item">
+      <div class="ci-src" style="background:${s.c}">${c.src.slice(0,2)}</div>
+      <div class="ci-body"><div class="ci-title">${c.t}</div>
+        <div class="ci-meta">灵犀自动收录 · ${c.tag} · 建议 ${realmBadge(c.lv)}</div></div>
+      <div class="ci-acts"><button class="op-btn op-ghost" onclick="toast('已忽略该条')">忽略</button><button class="op-btn op-primary" onclick="toast('已加入待审核队列')">收录</button></div>
+    </div>`;
+  }).join('');
+}
+function renderReview(){
+  document.getElementById('review-body').innerHTML=CRAWL.slice(0,4).map(c=>{
+    const s=SRCS.find(x=>x.n===c.src);
+    return `<tr>
+      <td><div class="row-name">${c.t}</div><div class="row-sub">${s.n} · ${c.tag}</div></td>
+      <td>${realmBadge(c.lv)}</td>
+      <td><span class="imp-stars">${'★'.repeat(Math.max(1,Math.round(c.imp/2)))}</span> ${c.imp}/10</td>
+      <td><span class="chip">灵犀 AI</span></td>
+      <td><div class="op-row" style="justify-content:flex-end">
+        <button class="op-btn op-primary" onclick="toast('已露出 · 玩家可挑战')">露出</button>
+        <button class="op-btn op-ghost" onclick="toast('已退回草稿')">搁置</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+function renderRealmDist(){
+  const total=8904;
+  const dist=[{r:REALMS[0],pct:41},{r:REALMS[1],pct:28},{r:REALMS[2],pct:15},{r:REALMS[3],pct:8},{r:REALMS[4],pct:4.5},{r:REALMS[5],pct:2},{r:REALMS[6],pct:1},{r:REALMS[7],pct:.5}];
+  document.getElementById('realm-dist').innerHTML=dist.map(d=>`
+    <div class="rd-row"><div class="rd-head"><span class="nm"><span class="orb" style="background:${d.r.color}"></span>${d.r.name} <small style="color:var(--ink-3);font-weight:400">Lv.${d.r.lv[0]}–${d.r.lv[1]}</small></span><span>${Math.round(total*d.pct/100)} 人</span></div>
+    <div class="rd-bar"><i style="width:${d.pct*2}%;background:${d.r.color}"></i></div></div>`).join('');
+}
+function renderHot(){
+  document.getElementById('hot-skills').innerHTML=SKILLS.slice().sort((a,b)=>b.lit-a.lit).slice(0,5).map((s,i)=>`
+    <div class="crawl-item"><div class="ci-src" style="background:var(--gold);font-size:14px">${i+1}</div>
+      <div class="ci-body"><div class="ci-title">${s.name}</div><div class="ci-meta">点亮 ${s.lit} 人 · 判定通过率 ${60+Math.round(s.lit%38)}%</div></div></div>`).join('');
+}
+function renderCrawlList(){
+  document.getElementById('crawl-list').innerHTML=CRAWL.map(c=>{
+    const s=SRCS.find(x=>x.n===c.src);
+    return `<div class="crawl-item">
+      <div class="ci-src" style="background:${s.c}">${c.src.slice(0,2)}</div>
+      <div class="ci-body"><div class="ci-title">${c.t}</div>
+        <div class="ci-meta">灵犀爬取 · ${c.tag} · ${realmBadge(c.lv)} · 建议重要性 <span style="color:var(--gold)">${c.imp}/10</span></div></div>
+      <div class="ci-acts">
+        <button class="op-btn op-primary" onclick="toast('已收录并加入审核')">收录</button>
+        <button class="op-btn op-ghost" onclick="openDrawer()">查看</button>
+        <button class="op-btn op-warn" onclick="toast('已忽略')">忽略</button>
+      </div></div>`;
+  }).join('');
+}
+function renderSkillTable(){
+  document.getElementById('skill-tbody').innerHTML=SKILLS.map(s=>{
+    const stMap={open:['st-open','已露出'],pause:['st-pause','已下架'],new:['st-new','待审核']};
+    const [cls,txt]=stMap[s.st];
+    return `<tr>
+      <td><div class="row-name">${s.name}</div><div class="row-sub">${s.vendor} · ${s.domain}</div></td>
+      <td><span class="chip">${s.domain}</span></td>
+      <td>${realmBadge(s.lv)}</td>
+      <td><span class="imp-stars">${'★'.repeat(Math.max(1,Math.round(s.imp/2)))}</span> ${s.imp}/10</td>
+      <td><span class="status-pill ${cls}">${txt}</span></td>
+      <td><div class="op-row" style="justify-content:flex-end">
+        <button class="op-btn op-ghost" onclick="openDrawer()">编辑</button>
+        <button class="op-btn op-primary" onclick="toast('已复制试炼链接')">复制链接</button>
+      </div></td></tr>`;
+  }).join('');
+}
+function renderNews(){
+  document.getElementById('news-tbody').innerHTML=NEWS.map(n=>`
+    <tr>
+      <td><div class="row-name">${n.t}</div><div class="row-sub">灵犀撰写 · 每日辰时</div></td>
+      <td><span class="chip">${n.src}</span></td>
+      <td>${n.link?`<a style="color:var(--seal);cursor:pointer" onclick="toast('跳转技能详情页')">⟶ ${n.link}</a>`:'<span style="color:var(--ink-3)">未关联</span>'}</td>
+      <td><span class="status-pill ${n.st==='pub'?'st-open':'st-new'}">${n.st==='pub'?'已发布':'草稿'}</span></td>
+      <td><div class="op-row" style="justify-content:flex-end">
+        ${n.st==='pub'?`<button class="op-btn op-warn" onclick="toast('已下线')">下线</button>`:`<button class="op-btn op-primary" onclick="toast('已发布到仙穹首页')">发布</button>`}
+        <button class="op-btn op-ghost" onclick="toast('编辑灵讯')">编辑</button>
+      </div></td></tr>`).join('');
+}
+function renderPlayers(){
+  document.getElementById('player-tbody').innerHTML=PLAYERS.map(p=>{
+    const r=realmOf(p.lv);
+    const medals=p.medals;
+    return `<tr>
+      <td><div class="row-name">${p.name} <span style="color:var(--ink-3);font-weight:400;font-size:11px">@${p.git}</span></div></td>
+      <td>${realmBadge(p.lv)}</td>
+      <td><div class="bar-cell"><div class="btr"><i style="width:${Math.min(100,p.lit)}%"></i></div><b style="font-size:12px">${p.lit}</b></div></td>
+      <td><div style="display:flex">${Array.from({length:Math.min(3,medals)}).map((_,i)=>`<span class="medal-mini" style="background:${['#3E8A6A','#A8823C','#6B5B95'][i]}">${['基','云','剑'][i]}</span>`).join('')}${medals>3?`<span class="chip" style="margin-left:6px">+${medals-3}</span>`:''}</div></td>
+      <td><span style="color:var(--ink-2);font-size:12.5px">${p.last}</span></td>
+      <td><div class="op-row" style="justify-content:flex-end"><button class="op-btn op-ghost" onclick="toast('查看仙籍详情')">仙籍</button><button class="op-btn op-warn" onclick="toast('已发送修行提醒')">提醒</button></div></td></tr>`;
+  }).join('');
+}
+function renderMedalAdmin(){
+  document.getElementById('medal-grid-admin').innerHTML=MEDAL_ADMIN.map(m=>`
+    <div style="border:1px solid var(--line);border-radius:12px;padding:18px 14px;text-align:center;background:var(--paper-2)">
+      <div style="width:52px;height:52px;margin:0 auto 10px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,${m.c} 12%,white);border:1px solid color-mix(in srgb,${m.c} 45%,transparent);font-family:var(--font-title);font-size:22px;color:${m.c};font-weight:900">${m.sigil}</div>
+      <div style="font-size:13px;font-weight:700">${m.name}</div>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:4px">${m.cond}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+        <button class="op-btn op-ghost" onclick="toast('编辑勋章规则')">规则</button>
+        <button class="op-btn op-primary" onclick="toast('勋章已启用')">启用</button>
+      </div></div>`).join('');
+}
+
+/* ═══════════ 路由 / 抽屉 ═══════════ */
+const PAGES={dash:'总览玉鉴',crawl:'灵犀爬取',skills:'技能管理',news:'灵讯管理',players:'玩家仙籍',medals:'勋章铸造'};
+function go(v){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById('page-'+v).style.display='block';
+  document.querySelectorAll('.side-nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===v));
+  document.getElementById('page-title').textContent=PAGES[v];
+  document.getElementById('crumb').innerHTML=`琅嬛玉阁 / <b>${PAGES[v]}</b>`;
+  if(v==='dash'){renderCrawlFeed();renderReview();renderRealmDist();renderHot()}
+  if(v==='crawl')renderCrawlList();
+  if(v==='skills')renderSkillTable();
+  if(v==='news')renderNews();
+  if(v==='players')renderPlayers();
+  if(v==='medals')renderMedalAdmin();
+}
+function openDrawer(){
+  document.getElementById('drawer-mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+  document.getElementById('realm-picker').innerHTML=REALMS.map(r=>`
+    <div class="rp-item ${r.id==='r6'?'sel':''}" onclick="this.parentNode.querySelectorAll('.rp-item').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')">
+      <span class="orb" style="background:${r.color}"></span>${r.name} <small style="color:var(--ink-3)">Lv.${r.lv[0]}-${r.lv[1]}</small>
+    </div>`).join('');
+}
+function closeDrawer(){
+  document.getElementById('drawer-mask').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+}
+function enterAdmin(){
+  document.getElementById('login-view').style.display='none';
+  document.getElementById('app-view').classList.add('on');
+  go('dash');
+  toast('◈ 恭迎掌印者入阁');
+}
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
+}
+document.getElementById('adm-pass').addEventListener('keydown',e=>{if(e.key==='Enter')enterAdmin()});
+renderCrawlFeed();renderRealmDist();
+</script>
+</body>
+</html>
