@@ -150,3 +150,104 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_admin_audit_admin_time ON admin_audit_log (admin_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_admin_audit_target ON admin_audit_log (target_type, target_id);
+
+CREATE TABLE IF NOT EXISTS crawl_run (
+  id VARCHAR(64) PRIMARY KEY,
+  source_type VARCHAR(32) NOT NULL CHECK (source_type IN ('skill', 'news', 'case', 'mixed')),
+  status VARCHAR(32) NOT NULL DEFAULT 'running' CHECK (status IN ('running', 'succeeded', 'failed', 'partial')),
+  stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+  started_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  finished_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_crawl_run_status_time ON crawl_run (status, started_at);
+
+CREATE TABLE IF NOT EXISTS skill_candidate (
+  id VARCHAR(64) PRIMARY KEY,
+  slug VARCHAR(128) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  vendor_name VARCHAR(128) NOT NULL,
+  vendor_type VARCHAR(32),
+  logo_url TEXT,
+  category_tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+  difficulty_lv INTEGER NOT NULL CHECK (difficulty_lv BETWEEN 1 AND 100),
+  importance JSONB NOT NULL DEFAULT '{}'::jsonb,
+  doc JSONB NOT NULL DEFAULT '{}'::jsonb,
+  related_news JSONB NOT NULL DEFAULT '[]'::jsonb,
+  provenance JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'approved', 'rejected', 'merged')),
+  idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+  submitted_by VARCHAR(128) NOT NULL,
+  reviewed_by VARCHAR(128),
+  review_note TEXT,
+  published_slug VARCHAR(128),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_skill_candidate_status_time ON skill_candidate (status, created_at);
+CREATE INDEX IF NOT EXISTS idx_skill_candidate_slug ON skill_candidate (slug);
+CREATE INDEX IF NOT EXISTS idx_skill_candidate_provenance ON skill_candidate USING gin (provenance);
+
+CREATE TABLE IF NOT EXISTS news_candidate (
+  id VARCHAR(64) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  summary TEXT NOT NULL,
+  source_url TEXT NOT NULL,
+  published_at TIMESTAMP WITH TIME ZONE,
+  related_skill_slug VARCHAR(128),
+  provenance JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'approved', 'rejected', 'merged')),
+  idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+  submitted_by VARCHAR(128) NOT NULL,
+  reviewed_by VARCHAR(128),
+  review_note TEXT,
+  published_id VARCHAR(64),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_news_candidate_status_time ON news_candidate (status, created_at);
+CREATE INDEX IF NOT EXISTS idx_news_candidate_related_skill ON news_candidate (related_skill_slug);
+CREATE INDEX IF NOT EXISTS idx_news_candidate_provenance ON news_candidate USING gin (provenance);
+
+CREATE TABLE IF NOT EXISTS case_candidate (
+  id VARCHAR(64) PRIMARY KEY,
+  slug VARCHAR(128) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  scenario_desc TEXT NOT NULL,
+  skill_slugs JSONB NOT NULL DEFAULT '[]'::jsonb,
+  category_tags JSONB NOT NULL DEFAULT '[]'::jsonb,
+  difficulty_lv INTEGER NOT NULL CHECK (difficulty_lv BETWEEN 1 AND 100),
+  importance JSONB NOT NULL DEFAULT '{}'::jsonb,
+  provenance JSONB NOT NULL DEFAULT '{}'::jsonb,
+  status VARCHAR(32) NOT NULL DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'approved', 'rejected', 'merged')),
+  idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+  submitted_by VARCHAR(128) NOT NULL,
+  reviewed_by VARCHAR(128),
+  review_note TEXT,
+  published_slug VARCHAR(128),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  reviewed_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS idx_case_candidate_status_time ON case_candidate (status, created_at);
+CREATE INDEX IF NOT EXISTS idx_case_candidate_skill_slugs ON case_candidate USING gin (skill_slugs);
+CREATE INDEX IF NOT EXISTS idx_case_candidate_provenance ON case_candidate USING gin (provenance);
+
+CREATE TABLE IF NOT EXISTS admin_agent_client (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(128) NOT NULL,
+  scope JSONB NOT NULL DEFAULT '[]'::jsonb,
+  secret_ref VARCHAR(255) NOT NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'disabled')),
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_agent_client_status ON admin_agent_client (status);

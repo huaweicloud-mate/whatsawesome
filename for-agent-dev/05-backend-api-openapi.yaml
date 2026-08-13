@@ -6,7 +6,8 @@ info:
     Whats Awesome 后端标准接口文档。
 
     当前实现为 Node Express 本地骨架，接口契约对齐后续华为云 APIG + FunctionGraph + GaussDB。
-    迭代二已覆盖玩家档案、案例、手工点亮、管理员审核、勋章发放和个人主页聚合。
+    REST 接口分为 Portal 人类用户 API、Admin 人类管理 API、Admin-Agent 管理侧 Agent API。
+    用户面开发者 Agent 不调用 REST 点亮接口，后续走 Portal MCP 服务；MCP 契约见 `for-agent-dev/07-portal-mcp-contract.md`。
 servers:
   - url: http://localhost:8000
     description: Local backend
@@ -18,7 +19,7 @@ tags:
   - name: Player
   - name: Quest
   - name: Admin
-  - name: Agent
+  - name: AdminAgent
 paths:
   /api/health:
     get:
@@ -32,7 +33,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
 
-  /api/meta/stages:
+  /api/portal/meta/stages:
     get:
       tags: [Meta]
       summary: 获取 Boss Lv 八境映射
@@ -50,7 +51,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/DifficultyStage'
 
-  /api/meta/labels:
+  /api/portal/meta/labels:
     get:
       tags: [Meta]
       summary: 获取标签字典
@@ -68,7 +69,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/Label'
 
-  /api/skills:
+  /api/portal/skills:
     get:
       tags: [Skill]
       summary: 获取已发布技能列表
@@ -102,7 +103,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/SkillCard'
 
-  /api/skills/{slug}:
+  /api/portal/skills/{slug}:
     get:
       tags: [Skill]
       summary: 获取技能详情
@@ -118,7 +119,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/cases:
+  /api/portal/cases:
     get:
       tags: [Case]
       summary: 获取已发布案例列表
@@ -146,7 +147,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/CaseCard'
 
-  /api/cases/{slug}:
+  /api/portal/cases/{slug}:
     get:
       tags: [Case]
       summary: 获取案例详情
@@ -162,7 +163,26 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/players:
+  /api/portal/news:
+    get:
+      tags: [Skill]
+      summary: 获取已发布资讯列表
+      responses:
+        '200':
+          description: 资讯列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/News'
+
+  /api/portal/players:
     post:
       tags: [Player]
       summary: 创建或更新玩家档案
@@ -199,7 +219,7 @@ paths:
         '400':
           $ref: '#/components/responses/ValidationError'
 
-  /api/players/{id}/profile:
+  /api/portal/players/{id}/profile:
     get:
       tags: [Player]
       summary: 获取玩家个人主页聚合数据
@@ -215,7 +235,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/quests:
+  /api/portal/quests:
     get:
       tags: [Quest]
       summary: 查询闯关/点亮申请流水
@@ -242,7 +262,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/Quest'
 
-  /api/quests/manual:
+  /api/portal/quests/manual:
     post:
       tags: [Quest]
       summary: 提交手工点亮申请
@@ -343,8 +363,8 @@ paths:
     get:
       tags: [Admin]
       summary: 查询技能候选
-      description: 管理端读取技能 Agent 通过 /api/agent/skill-candidates 提交的候选。
-      x-implementation-status: planned
+      description: 管理端读取技能 Agent 通过 /api/admin-agent/skill-candidates 提交的候选。
+      x-implementation-status: implemented
       security:
         - AdminSession: []
       parameters:
@@ -371,7 +391,7 @@ paths:
     post:
       tags: [Admin]
       summary: 审核通过技能候选
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security:
         - AdminSession: []
       parameters:
@@ -398,7 +418,7 @@ paths:
     post:
       tags: [Admin]
       summary: 驳回技能候选
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security:
         - AdminSession: []
       parameters:
@@ -425,8 +445,8 @@ paths:
     get:
       tags: [Admin]
       summary: 查询资讯候选
-      description: 管理端读取技能 Agent 通过 /api/agent/news-candidates 提交的资讯候选。
-      x-implementation-status: planned
+      description: 管理端读取技能 Agent 通过 /api/admin-agent/news-candidates 提交的资讯候选。
+      x-implementation-status: implemented
       security:
         - AdminSession: []
       parameters:
@@ -449,16 +469,70 @@ paths:
                     items:
                       $ref: '#/components/schemas/NewsCandidate'
 
-  /api/agent/crawl-runs:
+  /api/admin/news-candidates/{id}/publish:
     post:
-      tags: [Agent]
+      tags: [Admin]
+      summary: 发布资讯候选
+      x-implementation-status: implemented
+      security:
+        - AdminSession: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CandidateReviewRequest'
+      responses:
+        '200':
+          description: 资讯已发布
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateReviewResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/news-candidates/{id}/reject:
+    post:
+      tags: [Admin]
+      summary: 驳回资讯候选
+      x-implementation-status: implemented
+      security:
+        - AdminSession: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CandidateReviewRequest'
+      responses:
+        '200':
+          description: 资讯候选已驳回
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateReviewResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin-agent/crawl-runs:
+    post:
+      tags: [AdminAgent]
       summary: 创建 AI 抓取批次
       description: FunctionGraph 定时任务启动时创建批次，用于后续候选内容追踪。
       x-implementation-status: planned
       security:
-        - AgentId: []
-          AgentSignature: []
-          AgentTimestamp: []
+        - AdminAgentId: []
+          AdminAgentSignature: []
+          AdminAgentTimestamp: []
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -477,16 +551,16 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /api/agent/skill-candidates:
+  /api/admin-agent/skill-candidates:
     post:
-      tags: [Agent]
+      tags: [AdminAgent]
       summary: 技能 Agent 提交技能候选
       description: 只写入 pending_review，不直接发布到用户面。
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security:
-        - AgentId: []
-          AgentSignature: []
-          AgentTimestamp: []
+        - AdminAgentId: []
+          AdminAgentSignature: []
+          AdminAgentTimestamp: []
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -505,16 +579,16 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /api/agent/news-candidates:
+  /api/admin-agent/news-candidates:
     post:
-      tags: [Agent]
+      tags: [AdminAgent]
       summary: 技能 Agent 提交资讯候选
       description: 只写入 pending_review，管理端审核发布后用户面可见。
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security:
-        - AgentId: []
-          AgentSignature: []
-          AgentTimestamp: []
+        - AdminAgentId: []
+          AdminAgentSignature: []
+          AdminAgentTimestamp: []
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -533,16 +607,16 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /api/agent/case-candidates:
+  /api/admin-agent/case-candidates:
     post:
-      tags: [Agent]
+      tags: [AdminAgent]
       summary: 技能 Agent 提交案例候选
       description: 只写入 pending_review，管理端审核发布后用户面可见。
       x-implementation-status: planned
       security:
-        - AgentId: []
-          AgentSignature: []
-          AgentTimestamp: []
+        - AdminAgentId: []
+          AdminAgentSignature: []
+          AdminAgentTimestamp: []
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody:
@@ -573,20 +647,20 @@ components:
       in: cookie
       name: wa_admin_session
       description: GitCode OAuth + RBAC 后的管理员会话；本地临时用 x-admin-id 模拟。
-    AgentId:
+    AdminAgentId:
       type: apiKey
       in: header
-      name: x-agent-id
-      description: 内部 Agent 客户端 ID。
-    AgentSignature:
+      name: x-admin-agent-id
+      description: 管理侧内部 Agent 客户端 ID。
+    AdminAgentSignature:
       type: apiKey
       in: header
-      name: x-agent-signature
-      description: 内部 Agent 请求签名，密钥存 DEW/CSMS，不写入仓库。
-    AgentTimestamp:
+      name: x-admin-agent-signature
+      description: 管理侧 Agent 请求签名，密钥存 DEW/CSMS，不写入仓库。
+    AdminAgentTimestamp:
       type: apiKey
       in: header
-      name: x-agent-timestamp
+      name: x-admin-agent-timestamp
       description: 签名时间戳，用于防重放。
 
   parameters:
@@ -750,6 +824,18 @@ components:
         related_skill_slug: { type: string }
         provenance:
           $ref: '#/components/schemas/CandidateProvenance'
+
+    News:
+      type: object
+      required: [id, title, summary, source_url, status]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        source_url: { type: string }
+        published_at: { type: string, format: date-time }
+        related_skill_slug: { type: string }
+        status: { type: string, enum: [draft, published, archived] }
 
     NewsCandidate:
       allOf:

@@ -71,48 +71,51 @@ npm run dev
 | Method | Path | 说明 |
 |---|---|---|
 | GET | `/api/health` | 健康检查 |
-| GET | `/api/skills?tag=&min_lv=&max_lv=&q=` | 技能列表 |
-| GET | `/api/skills/:slug` | 技能详情 |
-| GET | `/api/meta/stages` | 八境难度映射 |
-| GET | `/api/meta/labels` | 标签字典 |
-| GET | `/api/cases` | 案例列表 |
-| GET | `/api/cases/:slug` | 案例详情 |
-| POST | `/api/players` | 创建或更新玩家档案 |
-| GET | `/api/players/:id/profile` | 玩家个人主页聚合 |
-| GET | `/api/quests?player_id=&status=` | 闯关申请流水 |
-| POST | `/api/quests/manual` | 提交手工点亮申请 |
+| GET | `/api/portal/skills?tag=&min_lv=&max_lv=&q=` | 技能列表 |
+| GET | `/api/portal/skills/:slug` | 技能详情 |
+| GET | `/api/portal/meta/stages` | 八境难度映射 |
+| GET | `/api/portal/meta/labels` | 标签字典 |
+| GET | `/api/portal/cases` | 案例列表 |
+| GET | `/api/portal/cases/:slug` | 案例详情 |
+| GET | `/api/portal/news` | 已发布资讯 |
+| POST | `/api/portal/players` | 创建或更新玩家档案 |
+| GET | `/api/portal/players/:id/profile` | 玩家个人主页聚合 |
+| GET | `/api/portal/quests?player_id=&status=` | 闯关申请流水 |
+| POST | `/api/portal/quests/manual` | 提交手工点亮申请 |
 | POST | `/api/admin/quests/:id/review` | 管理员审核点亮申请 |
 
 标准接口文档见 `for-agent-dev/05-backend-api-openapi.yaml`。
 
 ## 4. 后端接入方式
 
-后端第一稿已经提供本地可跑的 Node Express API，用于前端 Agent、裁判 Agent、QA Agent 并行开发。当前存储是内存 + JSON 种子数据，接口契约会迁移到华为云 APIG + FunctionGraph + GaussDB。
+后端第一稿已经提供本地可跑的 Node Express API，用于前端 Agent、管理端 Agent、技能 Agent、裁判 Agent、QA Agent 并行开发。当前存储是内存 + JSON 种子数据，接口契约会迁移到华为云 APIG + FunctionGraph + GaussDB。
 
 调用约定:
 
 - 本地基础地址: `http://localhost:8000`
-- 前端开发地址: `http://localhost:5173`，Vite 已代理 `/api` 到后端。
+- 前端开发地址: `http://localhost:5173`，Vite 已代理 `/api` 到后端；新 Agent 对接用户面 REST 时使用 `/api/portal`，旧 `/api/*` 仅作为本地兼容路径保留。
 - 请求体统一使用 `application/json`。
 - 列表响应统一是 `{ total, items }`。
 - 错误响应统一是 `{ error, message }`。
 - 管理端本地临时用请求头 `x-admin-id: admin-founder` 或 `x-admin-id: admin-secretary`，正式版本会替换为 GitCode OAuth + RBAC。
 
-三类接口面:
+四类接口面:
 
 | 接口面 | 路径 | 调用方 | 权限原则 |
 |---|---|---|---|
-| 用户面 | `/api/*` | 玩家端、普通玩家 Agent | 只能看 published 内容，只能操作自己的点亮/主页 |
-| 管理面 | `/api/admin/*` | 管理端，仅 2 个管理员 | 服务端 RBAC + 审计；用户面知道路径也必须返回 `403` |
-| 内部 Agent | `/api/agent/*` | 技能 Agent、定时爬虫、内容生成函数 | 服务到服务鉴权 + 幂等键；不开放浏览器 CORS |
+| 用户面人用 REST | `/api/portal/*` | 玩家端 Web、移动端、普通浏览器会话 | 只看 `published` 内容；玩家只能操作自己的档案、点亮和主页 |
+| 用户面开发者 Agent MCP | Portal MCP 服务，契约见 `for-agent-dev/07-portal-mcp-contract.md` | 玩家把自己的 Agent 连到本系统 MCP Server | 使用玩家 MCP token，只能代表当前玩家读技能 Doc、提交证据、申请点亮 |
+| 管理面人用 REST | `/api/admin/*` | 管理端 Web，仅 2 个管理员 | GitCode OAuth + 服务端 RBAC + 审计；用户面知道路径也必须返回 `403` |
+| 管理面 Agent REST | `/api/admin-agent/*` | 技能 Agent、资讯爬取 Agent、内容生成函数 | 服务到服务鉴权 + HMAC 签名 + 幂等键；只写候选，不直接发布 |
 
-AI 定时任务提交规则:
+管理面 Agent 定时提交规则:
 
 - 技能 Agent 不调用 `/api/admin/*`，因为管理面 API 代表人类管理员的审核权。
-- 定时爬虫/内容生成函数提交到 `/api/agent/skill-candidates`、`/api/agent/news-candidates`、`/api/agent/case-candidates`。
+- 定时爬虫/内容生成函数提交到 `/api/admin-agent/skill-candidates`、`/api/admin-agent/news-candidates`、`/api/admin-agent/case-candidates`。
 - Agent 提交的数据默认是 `pending_review` 或 `draft`，玩家端不可见。
 - 管理端再从 `/api/admin/*-candidates` 拉取候选，人工 `approve/reject` 后才发布。
 - Agent 写接口必须带 `idempotency_key`、`source_url`、`crawl_run_id`、`model_meta`，方便去重和审计。
+- 玩家自己的 Agent 不调用 `/api/admin-agent/*`，也不直接调用 `/api/portal/quests/manual` 做自动点亮；自动闯关通过 Portal MCP 工具进入同一条 `quest` 流水。
 
 最小联调用例:
 
@@ -121,12 +124,12 @@ AI 定时任务提交规则:
 curl http://localhost:8000/api/health
 
 # 创建玩家
-curl -X POST http://localhost:8000/api/players \
+curl -X POST http://localhost:8000/api/portal/players \
   -H "content-type: application/json" \
   -d "{\"gitcode_id\":\"demo-user\",\"gitcode_username\":\"demo\"}"
 
 # 提交手工点亮
-curl -X POST http://localhost:8000/api/quests/manual \
+curl -X POST http://localhost:8000/api/portal/quests/manual \
   -H "content-type: application/json" \
   -d "{\"player_id\":\"player_1\",\"target_type\":\"skill\",\"target_slug\":\"mcp\",\"evidence\":{\"description\":\"完成 MCP Hello World\"}}"
 
@@ -137,15 +140,23 @@ curl -X POST http://localhost:8000/api/admin/quests/quest_1/review \
   -d "{\"decision\":\"approved\",\"judge_note\":\"证据完整\"}"
 
 # 查看个人主页聚合
-curl http://localhost:8000/api/players/player_1/profile
+curl http://localhost:8000/api/portal/players/player_1/profile
+
+# 管理面 Agent 提交技能候选
+curl -X POST http://localhost:8000/api/admin-agent/skill-candidates \
+  -H "content-type: application/json" \
+  -H "x-admin-agent-id: skill-agent" \
+  -H "x-admin-agent-signature: local-dev-signature" \
+  -H "x-idempotency-key: crawl-20260813-skill-001" \
+  -d "{\"name\":\"示例技能\",\"slug\":\"demo-skill\",\"vendor_name\":\"Huawei Cloud\",\"category_tags\":[{\"key\":\"ai-coding\",\"label\":\"AI 编程\"}],\"difficulty_lv\":12,\"importance\":{\"score\":8,\"basis\":\"团队高频使用\"},\"doc\":{\"summary\":\"示例\",\"official_url\":\"https://example.com\",\"repo_url\":\"https://example.com/repo\",\"ecosystem\":\"示例生态\",\"hello_world\":\"运行 Hello World\",\"learning_prompt\":\"请带我学习这个技能\"},\"provenance\":{\"source_url\":\"https://example.com\",\"source_vendor\":\"Huawei Cloud\",\"crawl_run_id\":\"crawl_20260813\"}}"
 ```
 
 角色接入提示:
 
 - 前端 Agent: 只按 OpenAPI 调接口，不直接读 `backend/data/*.json`。
-- 裁判 Agent: 迭代三 MCP 工具内部应复用 `quest` 点亮流水，不另造一套点亮记录。
-- 技能 Agent: 生成技能/案例/资讯时只调用 `/api/agent/*` 提交候选，不调用 `/api/admin/*`。
-- 管理端 Agent: 只调用 `/api/admin/*`，负责审核、编辑、发布、驳回和审计查看。
+- 裁判 Agent: 迭代三 MCP 工具内部应复用 `quest` 点亮流水，不另造一套点亮记录；玩家 Agent 只接 Portal MCP。
+- 技能 Agent: 生成技能/案例/资讯时只调用 `/api/admin-agent/*` 提交候选，不调用 `/api/admin/*`。
+- 管理端 Agent: 只调用 `/api/admin-agent/*` 写候选；真正审核、编辑、发布、驳回由管理端人用 `/api/admin/*` 完成。
 - QA Agent: 以 `backend/test/iteration2-api.test.js` 作为后端冒烟基线，新增接口时同步补测试。
 - 后端 Agent: 新增/修改接口后，必须同步更新 `05-backend-api-openapi.yaml` 和 `06-backend-development-plan.md`。
 
@@ -365,12 +376,21 @@ Vue3 SPA(OBS + CDN)
 
 目标: 裁判 MCP Server、每日资讯爬取、技能关联、MCP 自动点亮。
 
-建议 MCP 工具:
+分工:
+
+- 玩家自己的开发者 Agent 只连接 Portal MCP，不拿管理权限。
+- Portal MCP 内部复用后端 `quest` 流水，必要时调用裁判判定函数。
+- 技能/资讯定时采集属于管理面 Agent，走 `/api/admin-agent/*` 写候选。
+- 人类管理员在 `/api/admin/*` 审核候选后，玩家端 `/api/portal/*` 才可见。
+
+Portal MCP 工具建议:
 
 - `verify_quest(skill_slug, player_token, evidence_url)`
 - `light_up_skill(skill_slug, player_token, judge_result)`
 - `get_skill_doc(skill_slug)`
 - `list_available_quests(player_token)`
+
+详细契约见 `for-agent-dev/07-portal-mcp-contract.md`。
 
 ### 迭代四: AI 强化与体验打磨
 

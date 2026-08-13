@@ -71,20 +71,22 @@ Frontend SPA
 
 ## 4. 鉴权与接口隔离
 
-后端必须拆成三类接口面，不能让用户面或 AI Agent 复用管理员权限。
+后端必须拆成四类入口，不能让玩家端、玩家自己的 Agent、管理端和管理侧 Agent 混用权限。
 
 | 接口面 | 路径前缀 | 调用方 | 鉴权方式 | 暴露策略 |
 |---|---|---|---|---|
-| 用户面 API | `/api/*` | 玩家端前端、普通玩家 Agent | GitCode OAuth 用户会话 / 玩家令牌 | 只读 published 内容；玩家只能操作自己的点亮与主页 |
-| 管理面 API | `/api/admin/*` | 管理端前端，仅 2 个管理员 | GitCode OAuth + 服务端 RBAC 白名单 + 管理审计 | 可公开到管理端域名，但必须服务端校验 admin role |
-| 内部 Agent API | `/api/agent/*` | 技能 Agent、定时爬虫、内容生成函数 | APIG App/IAM/FunctionGraph Agency + HMAC 签名 + 幂等键 | 不给浏览器 CORS；优先走内网或独立 APIG 应用 |
+| 用户面人用 REST | `/api/portal/*` | 玩家端前端、普通浏览器会话 | GitCode OAuth 用户会话 / 玩家令牌 | 只读 `published` 内容；玩家只能操作自己的点亮与主页 |
+| 用户面开发者 Agent MCP | Portal MCP 服务 | 玩家自己配置的 Agent、IDE、MCP Client | 玩家 MCP token + scope 约束 | 只代表当前玩家读技能 Doc、提交证据、申请点亮；不开放管理能力 |
+| 管理面人用 REST | `/api/admin/*` | 管理端前端，仅 2 个管理员 | GitCode OAuth + 服务端 RBAC 白名单 + 管理审计 | 可公开到管理端域名，但必须服务端校验 admin role |
+| 管理面 Agent REST | `/api/admin-agent/*` | 技能 Agent、定时爬虫、内容生成函数 | APIG App/IAM/FunctionGraph Agency + HMAC 签名 + 幂等键 | 不给浏览器 CORS；优先走内网或独立 APIG 应用 |
 
 关键规则:
 
 - 管理端接口不靠“前端隐藏按钮”防护，所有 `/api/admin/*` 都必须在服务端做 RBAC。
 - 用户面即使知道 `/api/admin/*` 路径，也只能拿到 `403`。
-- AI 定时任务不调用 `/api/admin/*`，只调用 `/api/agent/*` 提交候选内容。
-- `/api/agent/*` 写入的数据默认是 `pending_review` 或 `draft`，不会直接发布到玩家端。
+- AI 定时任务不调用 `/api/admin/*`，只调用 `/api/admin-agent/*` 提交候选内容。
+- `/api/admin-agent/*` 写入的数据默认是 `pending_review` 或 `draft`，不会直接发布到玩家端。
+- 玩家自己的 Agent 不调用 `/api/admin-agent/*`，自动闯关统一走 Portal MCP。
 - 所有管理审核、AI 提交、自动去重、发布/驳回都写 `admin_audit_log` 或对应审计事件。
 - Agent 写接口必须支持 `idempotency_key`，避免定时任务重试造成重复技能或资讯。
 
@@ -97,12 +99,12 @@ FunctionGraph Timer
   -> skill-crawler function
   -> 抓取官方源/可信源
   -> 盘古大模型摘要、打标、重要性评分
-  -> POST /api/agent/skill-candidates
-  -> POST /api/agent/news-candidates
+  -> POST /api/admin-agent/skill-candidates
+  -> POST /api/admin-agent/news-candidates
   -> GaussDB 写入 draft/pending_review
   -> 管理面 GET /api/admin/*-candidates
   -> 管理员审核 publish/reject
-  -> 玩家端 GET /api/skills /api/news 只看到 published
+  -> 玩家端 GET /api/portal/skills /api/portal/news 只看到 published
 ```
 
 提交内容必须带上:
@@ -120,7 +122,7 @@ FunctionGraph Timer
 
 - 管理面 API 代表人类管理员的审核权，AI 不应该持有这类权限。
 - AI 采集结果需要人工裁量，特别是“是否值得露出给玩家攻克”。
-- 分离后可以独立限流、审计和熔断 `/api/agent/*`，不会影响管理端操作。
+- 分离后可以独立限流、审计和熔断 `/api/admin-agent/*`，不会影响管理端操作。
 
 ## 6. 接口分期规划
 
@@ -129,30 +131,31 @@ FunctionGraph Timer
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
 | GET | `/api/health` | QA / 运维 | 健康检查 |
-| GET | `/api/meta/stages` | 前端 | 八境难度映射 |
-| GET | `/api/meta/labels` | 前端 / 技能 Agent | 标签字典 |
-| GET | `/api/skills` | 前端 / 裁判 Agent | 技能列表 |
-| GET | `/api/skills/{slug}` | 前端 / 裁判 Agent | 技能详情与 Doc |
-| GET | `/api/cases` | 前端 | 案例列表 |
-| GET | `/api/cases/{slug}` | 前端 | 案例详情与技能链 |
-| POST | `/api/players` | Auth 回调 / QA | 创建或更新玩家档案 |
-| GET | `/api/players/{id}/profile` | 前端 | 个人主页聚合 |
-| GET | `/api/quests` | 前端 / 管理端 / QA | 闯关流水查询 |
-| POST | `/api/quests/manual` | 前端 | 手工点亮申请 |
+| GET | `/api/portal/meta/stages` | 前端 | 八境难度映射 |
+| GET | `/api/portal/meta/labels` | 前端 | 标签字典 |
+| GET | `/api/portal/skills` | 前端 | 技能列表 |
+| GET | `/api/portal/skills/{slug}` | 前端 | 技能详情与 Doc |
+| GET | `/api/portal/cases` | 前端 | 案例列表 |
+| GET | `/api/portal/cases/{slug}` | 前端 | 案例详情与技能链 |
+| GET | `/api/portal/news` | 前端 | 已发布资讯列表 |
+| POST | `/api/portal/players` | Auth 回调 / QA | 创建或更新玩家档案 |
+| GET | `/api/portal/players/{id}/profile` | 前端 | 个人主页聚合 |
+| GET | `/api/portal/quests` | 前端 / QA | 闯关流水查询 |
+| POST | `/api/portal/quests/manual` | 前端 | 手工点亮申请 |
 | POST | `/api/admin/quests/{id}/review` | 管理端 | 审核点亮申请 |
 
 ### v0.3 数据库、上传与管理审核台
 
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
-| POST | `/api/uploads/presign` | 前端 | 获取 OBS 预签名上传 URL |
+| POST | `/api/portal/uploads/presign` | 前端 | 获取 OBS 预签名上传 URL |
 | GET | `/api/admin/quests` | 管理端 | 待审核申请列表，支持分页筛选 |
 | GET | `/api/admin/me` | 管理端 | 当前管理员身份与权限 |
-| GET | `/api/badges` | 前端 / 管理端 | 勋章定义列表 |
-| GET | `/api/players/{id}/quests` | 前端 | 玩家点亮历史 |
-| POST | `/api/auth/gitcode/callback` | GitCode OAuth | 登录回调，创建玩家会话 |
-| POST | `/api/auth/logout` | 前端 | 退出登录 |
-| GET | `/api/me` | 前端 | 当前登录用户 |
+| GET | `/api/portal/badges` | 前端 | 勋章定义列表 |
+| GET | `/api/portal/players/{id}/quests` | 前端 | 玩家点亮历史 |
+| POST | `/api/portal/auth/gitcode/callback` | GitCode OAuth | 登录回调，创建玩家会话 |
+| POST | `/api/portal/auth/logout` | 前端 | 退出登录 |
+| GET | `/api/portal/me` | 前端 | 当前登录用户 |
 
 ### v0.4 管理面
 
@@ -178,34 +181,41 @@ FunctionGraph Timer
 | POST | `/api/admin/news-candidates/{id}/reject` | 管理端 | 驳回资讯 |
 | GET | `/api/admin/audit-logs` | 管理端 | 管理操作审计 |
 
-### v0.5 技能 Agent 与资讯
+### v0.5 管理面 Agent 与资讯
 
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
-| POST | `/api/agent/crawl-runs` | 技能 Agent | 创建抓取批次 |
-| POST | `/api/agent/skill-candidates` | 技能 Agent | 提交技能候选 |
-| POST | `/api/agent/case-candidates` | 技能 Agent | 提交案例候选 |
-| POST | `/api/agent/news-candidates` | 技能 Agent | 提交资讯候选 |
-| PATCH | `/api/agent/crawl-runs/{id}` | 技能 Agent | 更新抓取批次结果 |
-| GET | `/api/news` | 前端 | 资讯列表 |
-| GET | `/api/news/{id}` | 前端 | 资讯详情 |
+| POST | `/api/admin-agent/crawl-runs` | 技能 Agent | 创建抓取批次 |
+| POST | `/api/admin-agent/skill-candidates` | 技能 Agent | 提交技能候选 |
+| POST | `/api/admin-agent/case-candidates` | 技能 Agent | 提交案例候选 |
+| POST | `/api/admin-agent/news-candidates` | 技能 Agent | 提交资讯候选 |
+| PATCH | `/api/admin-agent/crawl-runs/{id}` | 技能 Agent | 更新抓取批次结果 |
+| GET | `/api/portal/news` | 前端 | 资讯列表 |
+| GET | `/api/portal/news/{id}` | 前端 | 资讯详情 |
 
-### v0.6 裁判 Agent 与 MCP
+### v0.6 Portal MCP 自动闯关
 
-| Method | Path | 调用方 | 说明 |
-|---|---|---|---|
-| POST | `/api/judge/verify` | MCP Server / 裁判 Agent | 判定技能或案例证据 |
-| POST | `/api/quests/mcp` | MCP Server | MCP 自动提交点亮申请 |
-| POST | `/api/quests/{id}/auto-review` | 裁判 Agent | 自动审核判定结果 |
-| GET | `/api/mcp/player-token` | 前端 | 获取玩家 MCP 接入令牌 |
+这一阶段对外提供的是 MCP 服务，不把玩家 Agent 暴露成普通 REST 调用方。REST 只保留给前端、管理端和管理侧 Agent。
 
-MCP 工具建议:
+Portal MCP 工具建议:
 
 - `get_skill_doc(skill_slug)`
-- `list_available_quests(player_token)`
+- `list_available_quests(filters?)`
 - `verify_quest(target_type, target_slug, evidence)`
-- `light_up_skill(skill_slug, player_token, judge_result)`
-- `light_up_case(case_slug, player_token, judge_result)`
+- `submit_skill_evidence(skill_slug, evidence)`
+- `light_up_skill(skill_slug, verification_result)`
+- `light_up_case(case_slug, verification_result)`
+- `get_player_progress()`
+
+内部领域能力:
+
+| 能力 | 调用方 | 说明 |
+|---|---|---|
+| 判定技能或案例证据 | Portal MCP Server / 裁判 Agent | 规则判定 + 可选盘古大模型辅助 |
+| 写入 MCP 自动点亮流水 | Portal MCP Server | 写入 `quest_log.method=mcp_auto`，不绕过点亮事件模型 |
+| 获取玩家 MCP token | Portal 前端 | 玩家登录后生成或轮换，只绑定当前玩家 |
+
+详细契约见 `for-agent-dev/07-portal-mcp-contract.md`。
 
 ## 7. 数据库规划
 
@@ -227,7 +237,7 @@ MCP 工具建议:
 - `case_candidate`: 案例候选。
 - `news_candidate`: 资讯候选。
 - `crawl_run`: 每日抓取批次、来源统计、失败原因。
-- `agent_client`: 内部 Agent 客户端登记，保存非明文密钥引用、权限范围、状态。
+- `admin_agent_client`: 管理面 Agent 客户端登记，保存非明文密钥引用、权限范围、状态。
 
 建模原则:
 
@@ -241,12 +251,12 @@ MCP 工具建议:
 1. 把当前 `server.js` 拆成领域模块和 repository 接口，保持测试不变。
 2. 先实现管理面鉴权骨架: `GET /api/admin/me`、admin RBAC middleware、审计日志。
 3. 实现管理面审核台: `GET /api/admin/quests`、候选技能/资讯/案例审核接口。
-4. 实现 `/api/agent/*` 内部提交接口和幂等去重。
+4. 实现 `/api/admin-agent/*` 管理面 Agent 提交接口和幂等去重。
 5. 接入 GaussDB 本地/云上连接，替换内存 store。
 6. 实现 GitCode OAuth callback 与 `GET /api/me`。
 7. 实现 OBS 预签名上传，完成手工点亮真实证据链路。
 8. 补管理面技能/案例/勋章/资讯 CRUD。
-9. 接入裁判 Agent 与 MCP 自动点亮。
+9. 接入 Portal MCP 与裁判 Agent 自动点亮。
 10. 做 FunctionGraph 部署适配，把 Express handler 拆成可部署函数。
 
 ## 9. 华为云操作规则

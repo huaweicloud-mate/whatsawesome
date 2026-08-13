@@ -83,10 +83,17 @@ export function createMemoryStore(seed = {}) {
     labels: clone(seed.labels || labelsSeed),
     cases: clone(seed.cases || casesSeed),
     badgeDefs: clone(seed.badgeDefs || badgeDefsSeed),
+    news: [],
+    skillCandidates: [],
+    newsCandidates: [],
+    caseCandidates: [],
+    crawlRuns: [],
     players: [],
     quests: [],
     nextPlayerId: 1,
     nextQuestId: 1,
+    nextCandidateId: 1,
+    nextCrawlRunId: 1,
   };
 }
 
@@ -301,17 +308,203 @@ function buildProfile(store, playerId) {
   };
 }
 
-export function createApp({ store = createMemoryStore() } = {}) {
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
+function toNewsCard(news) {
+  return {
+    id: news.id,
+    title: news.title,
+    summary: news.summary,
+    source_url: news.source_url,
+    published_at: news.published_at,
+    related_skill_slug: news.related_skill_slug || '',
+    status: news.status,
+  };
+}
 
-  app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'whatsawesome-api' }));
+function isAdmin(adminId) {
+  return ADMIN_IDS.has(adminId);
+}
 
-  app.get('/api/meta/stages', (_req, res) => res.json({ stages: store.stages }));
-  app.get('/api/meta/labels', (_req, res) => res.json({ labels: store.labels }));
+function assertAdmin(adminId) {
+  return isAdmin(adminId) ? null : makeError(403, 'admin permission required', 'forbidden');
+}
 
-  app.get('/api/skills', (req, res) => {
+function assertAdminAgent(req) {
+  const agentId = String(req.header('x-admin-agent-id') || '').trim();
+  const signature = String(req.header('x-admin-agent-signature') || '').trim();
+  if (!agentId || signature !== 'local-dev-signature') {
+    return makeError(403, 'admin agent signature required', 'forbidden');
+  }
+  return null;
+}
+
+function requireIdempotencyKey(req) {
+  const key = String(req.header('x-idempotency-key') || '').trim();
+  return key || null;
+}
+
+function validateProvenance(provenance) {
+  if (!provenance || typeof provenance !== 'object') return 'provenance is required';
+  if (!String(provenance.source_url || '').trim()) return 'provenance.source_url is required';
+  if (!String(provenance.source_vendor || '').trim()) return 'provenance.source_vendor is required';
+  if (!String(provenance.crawl_run_id || '').trim()) return 'provenance.crawl_run_id is required';
+  return '';
+}
+
+function submitSkillCandidate(store, payload, req) {
+  const authError = assertAdminAgent(req);
+  if (authError) return authError;
+  const idempotencyKey = requireIdempotencyKey(req);
+  if (!idempotencyKey) return makeError(400, 'x-idempotency-key is required', 'validation_error');
+
+  const existing = store.skillCandidates.find(c => c.idempotency_key === idempotencyKey);
+  if (existing) return { status: 200, body: existing };
+
+  for (const field of ['name', 'slug', 'vendor_name', 'difficulty_lv', 'importance', 'doc']) {
+    if (payload[field] === undefined || payload[field] === null || payload[field] === '') {
+      return makeError(400, `${field} is required`, 'validation_error');
+    }
+  }
+  const provenanceError = validateProvenance(payload.provenance);
+  if (provenanceError) return makeError(400, provenanceError, 'validation_error');
+
+  const timestamp = nowIso();
+  const candidate = {
+    id: `skill_candidate_${store.nextCandidateId++}`,
+    ...clone(payload),
+    status: 'pending_review',
+    idempotency_key: idempotencyKey,
+    submitted_by: req.header('x-admin-agent-id'),
+    review_note: '',
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+  store.skillCandidates.push(candidate);
+  return { status: 201, body: candidate };
+}
+
+function submitNewsCandidate(store, payload, req) {
+  const authError = assertAdminAgent(req);
+  if (authError) return authError;
+  const idempotencyKey = requireIdempotencyKey(req);
+  if (!idempotencyKey) return makeError(400, 'x-idempotency-key is required', 'validation_error');
+
+  const existing = store.newsCandidates.find(c => c.idempotency_key === idempotencyKey);
+  if (existing) return { status: 200, body: existing };
+
+  for (const field of ['title', 'summary', 'source_url']) {
+    if (!String(payload[field] || '').trim()) {
+      return makeError(400, `${field} is required`, 'validation_error');
+    }
+  }
+  const provenanceError = validateProvenance(payload.provenance);
+  if (provenanceError) return makeError(400, provenanceError, 'validation_error');
+
+  const timestamp = nowIso();
+  const candidate = {
+    id: `news_candidate_${store.nextCandidateId++}`,
+    ...clone(payload),
+    status: 'pending_review',
+    idempotency_key: idempotencyKey,
+    submitted_by: req.header('x-admin-agent-id'),
+    review_note: '',
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+  store.newsCandidates.push(candidate);
+  return { status: 201, body: candidate };
+}
+
+function filterByStatus(items, status) {
+  return status ? items.filter(item => item.status === status) : items;
+}
+
+function approveSkillCandidate(store, candidateId, adminId, payload) {
+  const adminError = assertAdmin(adminId);
+  if (adminError) return adminError;
+
+  const candidate = store.skillCandidates.find(c => c.id === candidateId);
+  if (!candidate) return makeError(404, 'skill candidate not found', 'not_found');
+  if (candidate.status !== 'pending_review') return makeError(409, 'candidate already reviewed', 'conflict');
+
+  const timestamp = nowIso();
+  const skill = {
+    name: candidate.name,
+    slug: payload.publish_slug || candidate.slug,
+    vendor_name: candidate.vendor_name,
+    vendor_type: candidate.vendor_type || 'devtool',
+    logo_url: candidate.logo_url || '',
+    category_tags: candidate.category_tags || [],
+    difficulty_lv: Number(candidate.difficulty_lv),
+    importance: candidate.importance,
+    doc: candidate.doc,
+    status: 'published',
+    related_news: candidate.related_news || [],
+  };
+
+  const existingIndex = store.skills.findIndex(item => item.slug === skill.slug);
+  if (existingIndex >= 0) store.skills[existingIndex] = skill;
+  else store.skills.push(skill);
+
+  candidate.status = 'approved';
+  candidate.reviewed_by = adminId;
+  candidate.review_note = payload.review_note || '';
+  candidate.published_slug = skill.slug;
+  candidate.updated_at = timestamp;
+  candidate.reviewed_at = timestamp;
+  return { status: 200, body: { id: candidate.id, status: candidate.status, published_slug: skill.slug, review_note: candidate.review_note } };
+}
+
+function rejectCandidate(collection, candidateId, adminId, payload, label) {
+  const adminError = assertAdmin(adminId);
+  if (adminError) return adminError;
+  const candidate = collection.find(c => c.id === candidateId);
+  if (!candidate) return makeError(404, `${label} candidate not found`, 'not_found');
+  if (candidate.status !== 'pending_review') return makeError(409, 'candidate already reviewed', 'conflict');
+  candidate.status = 'rejected';
+  candidate.reviewed_by = adminId;
+  candidate.review_note = payload.review_note || '';
+  candidate.reviewed_at = nowIso();
+  candidate.updated_at = candidate.reviewed_at;
+  return { status: 200, body: { id: candidate.id, status: candidate.status, review_note: candidate.review_note } };
+}
+
+function publishNewsCandidate(store, candidateId, adminId, payload) {
+  const adminError = assertAdmin(adminId);
+  if (adminError) return adminError;
+
+  const candidate = store.newsCandidates.find(c => c.id === candidateId);
+  if (!candidate) return makeError(404, 'news candidate not found', 'not_found');
+  if (candidate.status !== 'pending_review') return makeError(409, 'candidate already reviewed', 'conflict');
+
+  const timestamp = nowIso();
+  const news = {
+    id: `news_${store.news.length + 1}`,
+    title: candidate.title,
+    summary: candidate.summary,
+    source_url: candidate.source_url,
+    published_at: candidate.published_at || timestamp,
+    related_skill_slug: candidate.related_skill_slug || '',
+    ai_generated: true,
+    status: 'published',
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+  store.news.push(news);
+
+  candidate.status = 'approved';
+  candidate.reviewed_by = adminId;
+  candidate.review_note = payload.review_note || '';
+  candidate.published_id = news.id;
+  candidate.updated_at = timestamp;
+  candidate.reviewed_at = timestamp;
+  return { status: 200, body: { id: candidate.id, status: candidate.status, published_id: news.id, review_note: candidate.review_note } };
+}
+
+function registerPortalRoutes(app, store, prefix) {
+  app.get(`${prefix}/meta/stages`, (_req, res) => res.json({ stages: store.stages }));
+  app.get(`${prefix}/meta/labels`, (_req, res) => res.json({ labels: store.labels }));
+
+  app.get(`${prefix}/skills`, (req, res) => {
     const { tag, min_lv, max_lv, q } = req.query;
     let list = store.skills.filter(s => s.status === 'published');
 
@@ -333,7 +526,7 @@ export function createApp({ store = createMemoryStore() } = {}) {
     });
   });
 
-  app.get('/api/skills/:slug', (req, res) => {
+  app.get(`${prefix}/skills/:slug`, (req, res) => {
     const skill = store.skills.find(s => s.slug === req.params.slug && s.status === 'published');
     if (!skill) return res.status(404).json({ error: 'not_found', message: 'skill not found' });
     const stage = stageOf(store.stages, skill.difficulty_lv);
@@ -343,7 +536,7 @@ export function createApp({ store = createMemoryStore() } = {}) {
     });
   });
 
-  app.get('/api/cases', (req, res) => {
+  app.get(`${prefix}/cases`, (req, res) => {
     const { tag, q } = req.query;
     let list = store.cases.filter(c => c.status === 'published');
 
@@ -362,7 +555,7 @@ export function createApp({ store = createMemoryStore() } = {}) {
     });
   });
 
-  app.get('/api/cases/:slug', (req, res) => {
+  app.get(`${prefix}/cases/:slug`, (req, res) => {
     const item = store.cases.find(c => c.slug === req.params.slug && c.status === 'published');
     if (!item) return res.status(404).json({ error: 'not_found', message: 'case not found' });
     const stage = stageOf(store.stages, item.difficulty_lv);
@@ -373,18 +566,23 @@ export function createApp({ store = createMemoryStore() } = {}) {
     res.json({ ...item, stage: toStageView(stage), skills });
   });
 
-  app.post('/api/players', (req, res) => {
+  app.get(`${prefix}/news`, (_req, res) => {
+    const list = store.news.filter(item => item.status === 'published');
+    res.json({ total: list.length, items: list.map(toNewsCard) });
+  });
+
+  app.post(`${prefix}/players`, (req, res) => {
     const result = createPlayer(store, req.body);
     res.status(result.status).json(result.body);
   });
 
-  app.get('/api/players/:id/profile', (req, res) => {
+  app.get(`${prefix}/players/:id/profile`, (req, res) => {
     const profile = buildProfile(store, req.params.id);
     if (!profile) return res.status(404).json({ error: 'not_found', message: 'player not found' });
     res.json(profile);
   });
 
-  app.get('/api/quests', (req, res) => {
+  app.get(`${prefix}/quests`, (req, res) => {
     const { player_id, status } = req.query;
     let list = [...store.quests];
     if (player_id) list = list.filter(q => q.player_id === player_id);
@@ -392,8 +590,44 @@ export function createApp({ store = createMemoryStore() } = {}) {
     res.json({ total: list.length, items: list });
   });
 
-  app.post('/api/quests/manual', (req, res) => {
+  app.post(`${prefix}/quests/manual`, (req, res) => {
     const result = submitManualQuest(store, req.body);
+    res.status(result.status).json(result.body);
+  });
+}
+
+function registerAdminRoutes(app, store) {
+  app.get('/api/admin/skill-candidates', (req, res) => {
+    const adminError = assertAdmin(req.header('x-admin-id') || '');
+    if (adminError) return res.status(adminError.status).json(adminError.body);
+    const items = filterByStatus(store.skillCandidates, req.query.status);
+    res.json({ total: items.length, items });
+  });
+
+  app.post('/api/admin/skill-candidates/:id/approve', (req, res) => {
+    const result = approveSkillCandidate(store, req.params.id, req.header('x-admin-id') || '', req.body);
+    res.status(result.status).json(result.body);
+  });
+
+  app.post('/api/admin/skill-candidates/:id/reject', (req, res) => {
+    const result = rejectCandidate(store.skillCandidates, req.params.id, req.header('x-admin-id') || '', req.body, 'skill');
+    res.status(result.status).json(result.body);
+  });
+
+  app.get('/api/admin/news-candidates', (req, res) => {
+    const adminError = assertAdmin(req.header('x-admin-id') || '');
+    if (adminError) return res.status(adminError.status).json(adminError.body);
+    const items = filterByStatus(store.newsCandidates, req.query.status);
+    res.json({ total: items.length, items });
+  });
+
+  app.post('/api/admin/news-candidates/:id/publish', (req, res) => {
+    const result = publishNewsCandidate(store, req.params.id, req.header('x-admin-id') || '', req.body);
+    res.status(result.status).json(result.body);
+  });
+
+  app.post('/api/admin/news-candidates/:id/reject', (req, res) => {
+    const result = rejectCandidate(store.newsCandidates, req.params.id, req.header('x-admin-id') || '', req.body, 'news');
     res.status(result.status).json(result.body);
   });
 
@@ -401,6 +635,30 @@ export function createApp({ store = createMemoryStore() } = {}) {
     const result = reviewQuest(store, req.params.id, req.header('x-admin-id') || '', req.body);
     res.status(result.status).json(result.body);
   });
+}
+
+function registerAdminAgentRoutes(app, store) {
+  app.post('/api/admin-agent/skill-candidates', (req, res) => {
+    const result = submitSkillCandidate(store, req.body, req);
+    res.status(result.status).json(result.body);
+  });
+
+  app.post('/api/admin-agent/news-candidates', (req, res) => {
+    const result = submitNewsCandidate(store, req.body, req);
+    res.status(result.status).json(result.body);
+  });
+}
+
+export function createApp({ store = createMemoryStore() } = {}) {
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+
+  app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'whatsawesome-api' }));
+  registerPortalRoutes(app, store, '/api/portal');
+  registerPortalRoutes(app, store, '/api');
+  registerAdminRoutes(app, store);
+  registerAdminAgentRoutes(app, store);
 
   return app;
 }
