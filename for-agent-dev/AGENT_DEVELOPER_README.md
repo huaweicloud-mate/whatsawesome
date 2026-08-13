@@ -37,11 +37,11 @@ Whats Awesome 是一个团队技能养成游戏化平台: 团队成员在这里�
 ## 2. 新 Agent 入场顺序
 
 1. 先读本文件，确认项目边界和自己角色。
-2. 再读 `for-agent-dev/README.md`，了解交付件索引。
-3. 需要业务背景时读 `for-agent-dev/01-site-setup.md`。
-4. 需要架构和数据模型时读 `for-agent-dev/02-system-design.md`。
-5. 需要领任务时读 `for-agent-dev/03-development-tasklist.md`。
-6. 需要标签、厂商、领域分类时读 `for-agent-dev/04-tag-taxonomy.md`。
+2. 需要业务背景时读 `for-agent-dev/01-site-setup.md`。
+3. 需要架构和数据模型时读 `for-agent-dev/02-system-design.md`。
+4. 需要领任务时读 `for-agent-dev/03-development-tasklist.md`。
+5. 需要标签、厂商、领域分类时读 `for-agent-dev/04-tag-taxonomy.md`。
+6. 对接后端前读 `for-agent-dev/05-backend-api-openapi.yaml` 和 `for-agent-dev/06-backend-development-plan.md`。
 7. 做 UI 前必须读 `for-agent-dev/ux/README.md` 和 `for-agent-dev/ux/设计交付文档.md`，必要时打开 `user.html` / `admin.html` 对照。
 
 ## 3. 本地运行
@@ -85,7 +85,54 @@ npm run dev
 
 标准接口文档见 `for-agent-dev/05-backend-api-openapi.yaml`。
 
-## 4. 六类 Agent 分工
+## 4. 后端接入方式
+
+后端第一稿已经提供本地可跑的 Node Express API，用于前端 Agent、裁判 Agent、QA Agent 并行开发。当前存储是内存 + JSON 种子数据，接口契约会迁移到华为云 APIG + FunctionGraph + GaussDB。
+
+调用约定:
+
+- 本地基础地址: `http://localhost:8000`
+- 前端开发地址: `http://localhost:5173`，Vite 已代理 `/api` 到后端。
+- 请求体统一使用 `application/json`。
+- 列表响应统一是 `{ total, items }`。
+- 错误响应统一是 `{ error, message }`。
+- 管理端本地临时用请求头 `x-admin-id: admin-founder` 或 `x-admin-id: admin-secretary`，正式版本会替换为 GitCode OAuth + RBAC。
+
+最小联调用例:
+
+```bash
+# 健康检查
+curl http://localhost:8000/api/health
+
+# 创建玩家
+curl -X POST http://localhost:8000/api/players \
+  -H "content-type: application/json" \
+  -d "{\"gitcode_id\":\"demo-user\",\"gitcode_username\":\"demo\"}"
+
+# 提交手工点亮
+curl -X POST http://localhost:8000/api/quests/manual \
+  -H "content-type: application/json" \
+  -d "{\"player_id\":\"player_1\",\"target_type\":\"skill\",\"target_slug\":\"mcp\",\"evidence\":{\"description\":\"完成 MCP Hello World\"}}"
+
+# 管理员审核通过
+curl -X POST http://localhost:8000/api/admin/quests/quest_1/review \
+  -H "content-type: application/json" \
+  -H "x-admin-id: admin-founder" \
+  -d "{\"decision\":\"approved\",\"judge_note\":\"证据完整\"}"
+
+# 查看个人主页聚合
+curl http://localhost:8000/api/players/player_1/profile
+```
+
+角色接入提示:
+
+- 前端 Agent: 只按 OpenAPI 调接口，不直接读 `backend/data/*.json`。
+- 裁判 Agent: 迭代三 MCP 工具内部应复用 `quest` 点亮流水，不另造一套点亮记录。
+- 技能 Agent: 生成技能/案例时先作为 `draft` 候选，未来走管理审核接口露出。
+- QA Agent: 以 `backend/test/iteration2-api.test.js` 作为后端冒烟基线，新增接口时同步补测试。
+- 后端 Agent: 新增/修改接口后，必须同步更新 `05-backend-api-openapi.yaml` 和 `06-backend-development-plan.md`。
+
+## 5. 六类 Agent 分工
 
 | Agent | 主要职责 | 主要产物 | 关键边界 |
 |---|---|---|---|
@@ -98,7 +145,7 @@ npm run dev
 
 六个 Agent 可以并行，但必须通过清晰契约协作: API 契约、数据字段、事件状态、验收标准。
 
-## 5. 核心对象边界
+## 6. 核心对象边界
 
 ### Skill 技能
 
@@ -207,7 +254,7 @@ npm run dev
 - 标签分 `domain` 和 `vendor` 两类。一个技能建议 2-4 个领域标签 + 1 个厂商标签。
 - 勋章规则放在 `badge_def.rule`，不要散落在前端判断里。
 
-## 6. 架构方向
+## 7. 架构方向
 
 当前实现是本地快速骨架:
 
@@ -235,7 +282,7 @@ Vue3 SPA(OBS + CDN)
 - AI: 盘古大模型，用于重要性评估、Doc 提示词、资讯摘要、案例生成、判定辅助。
 - MCP: 迭代三基于 FunctionGraph 官方 MCP Server 模板，对外暴露 APIG/SSE。
 
-## 7. API 与数据契约约定
+## 8. API 与数据契约约定
 
 新增接口时遵循以下习惯:
 
@@ -248,7 +295,7 @@ Vue3 SPA(OBS + CDN)
 
 数据字段命名优先使用当前 JSON 种子里的 snake_case。前端不要自行发明另一套字段。
 
-## 8. UX 落地约定
+## 9. UX 落地约定
 
 设计主线是“修仙 x 科技”，不是普通学习平台。
 
@@ -266,7 +313,7 @@ Vue3 SPA(OBS + CDN)
 
 做 UI 前必须对照 `for-agent-dev/ux/设计交付文档.md`。如果为了 MVP 做简化，要在交付说明里写明哪些设计能力被延期。
 
-## 9. 迭代路线
+## 10. 迭代路线
 
 ### 迭代一: 技能对象
 
@@ -312,7 +359,7 @@ Vue3 SPA(OBS + CDN)
 
 目标: 盘古全量评估、AI 生成案例、个人主页炫酷化、规则可视化、安全加固、全量回归。
 
-## 10. 安全与配置
+## 11. 安全与配置
 
 - 不提交 `.env`、Token、密码、AK/SK、OAuth secret、cookie、私钥。
 - 本机关键配置统一在 `~/.codex/user-config`，只能引用路径或读取到运行环境，不在聊天和日志里打印明文。
@@ -321,19 +368,19 @@ Vue3 SPA(OBS + CDN)
 - OBS 上传使用预签名 URL，服务端只保存文件 URL、hash、大小、类型、上传者、时间。
 - AI 生成内容必须带来源、生成时间、模型/提示词版本，方便追溯。
 
-## 11. 开发完成标准
+## 12. 开发完成标准
 
 任意 Agent 提交任务前，至少确认:
 
 - 变更没有破坏当前本地启动路径。
-- 新增或修改了 API 时，同步更新契约说明或 README。
+- 新增或修改了 API 时，同步更新 `for-agent-dev/05-backend-api-openapi.yaml` 和 `for-agent-dev/06-backend-development-plan.md`。
 - 新增领域字段时，同步更新种子数据、迁移设计和前端类型假设。
 - UI 变更对照 UX 文档，关键页面要能截图验收。
 - 涉及鉴权、上传、点亮、MCP、AI 的改动要覆盖失败路径。
 - 没有提交敏感配置。
 - 最终说明里写清楚运行方式、验证结果、遗留风险。
 
-## 12. 交付说明模板
+## 13. 交付说明模板
 
 后续 Agent 完成任务时，建议在交付回复或 PR 描述里包含:
 
@@ -359,7 +406,7 @@ Vue3 SPA(OBS + CDN)
 - ...
 ```
 
-## 13. 重要提醒
+## 14. 重要提醒
 
 - 不要把设计文档当成已经实现的代码能力。先看代码，再看文档目标。
 - 不要为了某个页面临时绕过领域边界。技能、案例、玩家、点亮、勋章、资讯要保持独立模块和稳定契约。
