@@ -4,9 +4,25 @@ import assert from 'node:assert/strict';
 test('FunctionGraph handler serves health checks from APIG-style events', async () => {
   const { handler } = await import('../functiongraph.js');
 
+  assert.equal(handler.length, 2);
+
   const response = await handler({
     httpMethod: 'GET',
     path: '/api/health',
+    headers: {},
+    queryStringParameters: {},
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(JSON.parse(response.body).service, 'whatsawesome-api');
+});
+
+test('FunctionGraph handler strips the public APIG base path', async () => {
+  const { handler } = await import('../functiongraph.js');
+
+  const response = await handler({
+    httpMethod: 'GET',
+    path: '/whatsawesome/api/health',
     headers: {},
     queryStringParameters: {},
   });

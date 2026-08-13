@@ -3,6 +3,24 @@
 > 面向后续接入本仓库的 Agent。先读这份，再进入具体任务。
 > 工作语言: 中文。任何密钥、Token、AK/SK、OAuth 配置只从本机 `~/.codex/user-config` 或运行环境读取，不写入仓库、不打印明文。
 
+## 0.1 云端联调入口
+
+当前后端已部署到华为云 FunctionGraph，并通过 APIG 暴露一个公网只读入口，供前端和 QA 先看页面效果:
+
+- 云端只读 Base URL: `https://03ce15e6b04e43d088581ceb15d5a4f7.apic.cn-north-4.huaweicloudapis.com/whatsawesome`
+- 健康检查: `GET /api/health`
+- 技能列表: `GET /api/portal/skills` 或兼容路径 `GET /api/skills`
+- 只读限制: 当前 APIG 只发布 `GET /whatsawesome...`，`POST/PUT/PATCH/DELETE` 不对公网开放。
+- 管理保护: 公共函数入口默认阻断 `/api/admin/*` 和 `/api/admin-agent/*`，即使通过公网路径访问也返回 `403`。
+- 本地完整能力: 需要玩家创建、手工点亮、管理审核、Admin-Agent 候选提交等写接口时，仍先使用本地 `http://localhost:8000`，后续再按明确授权开放云端写入口。
+- 当前存储: 云端版本仍是内存 + JSON 种子数据；GaussDB 表设计已在仓库中，但本轮未创建生产数据库实例。
+
+前端 Agent 建议把 API base 配成上面的云端 Base URL，然后继续按 OpenAPI 的 `/api/...` 路径调用。例如完整健康检查地址是:
+
+```text
+https://03ce15e6b04e43d088581ceb15d5a4f7.apic.cn-north-4.huaweicloudapis.com/whatsawesome/api/health
+```
+
 ## 0. 项目一句话
 
 Whats Awesome 是一个团队技能养成游戏化平台: 团队成员在这里看到 AI 时代最新、最值得掌握的技能，阅读技能 Doc，亲手试炼并点亮技能，再通过个人主页获得勋章、Title 和成长境界。

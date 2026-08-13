@@ -9,6 +9,8 @@ info:
     REST 接口分为 Portal 人类用户 API、Admin 人类管理 API、Admin-Agent 管理侧 Agent API。
     用户面开发者 Agent 不调用 REST 点亮接口，后续走 Portal MCP 服务；MCP 契约见 `for-agent-dev/07-portal-mcp-contract.md`。
 servers:
+  - url: https://03ce15e6b04e43d088581ceb15d5a4f7.apic.cn-north-4.huaweicloudapis.com/whatsawesome
+    description: Huawei Cloud APIG public read-only deployment, GET only
   - url: http://localhost:8000
     description: Local backend
 tags:

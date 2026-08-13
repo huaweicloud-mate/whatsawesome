@@ -27,7 +27,16 @@
 - GitCode OAuth 还没有真正接入，`POST /api/players` 目前是给本地联调和后续 OAuth callback 复用的领域入口。
 - OBS 预签名上传接口还没有实现，当前 `evidence.file_url` 先接收外部文件引用。
 - 管理员身份本地用 `x-admin-id` 临时模拟，正式版会换成 GitCode OAuth + RBAC。
-- 还没有实际创建华为云 GaussDB / FunctionGraph / APIG / OBS 资源。
+- 已创建并验证华为云 FunctionGraph + APIG 只读联调入口；GaussDB / OBS 生产资源仍未创建。
+
+当前云端联调状态:
+
+- FunctionGraph: `whatsawesome_backend`，区域 `cn-north-4`，运行时 `Node.js18.15`。
+- APIG 只读入口: `https://03ce15e6b04e43d088581ceb15d5a4f7.apic.cn-north-4.huaweicloudapis.com/whatsawesome`
+- 已发布方法: `GET /whatsawesome...`，用于前端读取技能、案例、资讯、元数据等公开内容。
+- 未开放方法: `POST/PUT/PATCH/DELETE`，避免公网暴露玩家提交、管理审核、Admin-Agent 写入等接口。
+- 公共函数入口默认阻断 `/api/admin/*` 和 `/api/admin-agent/*`，公网访问返回 `403`。
+- 当前云端存储仍是内存 + JSON 种子数据，函数实例冷启动或重建后非种子写入数据不会持久化；正式持久化仍按 GaussDB 迁移方案推进。
 
 ## 2. 后端总体规划
 

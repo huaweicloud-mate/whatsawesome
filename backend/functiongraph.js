@@ -1,5 +1,7 @@
 import { createApp } from './server.js';
 
+const DEFAULT_PUBLIC_BASE_PATHS = ['/whatsawesome'];
+
 let serverPromise;
 
 function normalizeHeaders(headers = {}) {
@@ -39,7 +41,24 @@ function eventPath(event) {
   ].filter(Boolean);
 
   const path = String(candidates[0] || '/api/health');
-  return path.startsWith('/') ? path : `/${path}`;
+  return stripPublicBasePath(path.startsWith('/') ? path : `/${path}`);
+}
+
+function publicBasePaths() {
+  const configured = process.env.WA_PUBLIC_BASE_PATHS || DEFAULT_PUBLIC_BASE_PATHS.join(',');
+  return configured
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean)
+    .map(item => item.startsWith('/') ? item : `/${item}`);
+}
+
+function stripPublicBasePath(path) {
+  for (const prefix of publicBasePaths()) {
+    if (path === prefix) return '/api/health';
+    if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length) || '/api/health';
+  }
+  return path;
 }
 
 function shouldBlockPublicPath(path) {
@@ -61,7 +80,8 @@ async function ensureServer() {
   return serverPromise;
 }
 
-export async function handler(event = {}) {
+export async function handler(event, _context) {
+  event = event || {};
   const { port } = await ensureServer();
   const method = event.httpMethod || event.requestContext?.http?.method || event.requestContext?.method || 'GET';
   const path = eventPath(event);
