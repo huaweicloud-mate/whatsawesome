@@ -1,0 +1,1421 @@
+{
+  "version": "0.1.1",
+  "categories": [
+    {
+      "key": "compute",
+      "name": "计算与架构",
+      "en": "Compute & Architecture"
+    },
+    {
+      "key": "data",
+      "name": "数据与存储",
+      "en": "Data & Storage"
+    },
+    {
+      "key": "ai",
+      "name": "AI 与智能",
+      "en": "AI & Intelligence"
+    },
+    {
+      "key": "engineering",
+      "name": "工程与 DevOps",
+      "en": "Engineering & DevOps"
+    },
+    {
+      "key": "frontend",
+      "name": "前端与体验",
+      "en": "Frontend & UX"
+    },
+    {
+      "key": "security",
+      "name": "安全与合规",
+      "en": "Security & Compliance"
+    },
+    {
+      "key": "network",
+      "name": "网络与边缘",
+      "en": "Network & Edge"
+    },
+    {
+      "key": "devtools",
+      "name": "开发工具与协作",
+      "en": "DevTools & Collaboration"
+    }
+  ],
+  "labels": [
+    {
+      "key": "serverless",
+      "label": "无服务器",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "Serverless 计算形态",
+      "aliases": [
+        "serverless",
+        "无服务器"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 10
+    },
+    {
+      "key": "faas",
+      "label": "函数计算",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "FaaS 平台与函数开发",
+      "aliases": [
+        "faas",
+        "function",
+        "函数"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 20
+    },
+    {
+      "key": "container",
+      "label": "容器",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "容器化、镜像、Compose",
+      "aliases": [
+        "docker",
+        "容器"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 30
+    },
+    {
+      "key": "kubernetes",
+      "label": "K8s 编排",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "Kubernetes 编排调度",
+      "aliases": [
+        "k8s",
+        "kubernetes",
+        "kubectl"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 40
+    },
+    {
+      "key": "microservice",
+      "label": "微服务",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "微服务架构与治理",
+      "aliases": [
+        "microservice",
+        "微服务"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 50
+    },
+    {
+      "key": "message-queue",
+      "label": "消息队列",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "异步消息与事件流",
+      "aliases": [
+        "mq",
+        "kafka",
+        "rabbitmq",
+        "消息队列"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 60
+    },
+    {
+      "key": "event-driven",
+      "label": "事件驱动",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "事件驱动架构",
+      "aliases": [
+        "event",
+        "事件驱动"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 70
+    },
+    {
+      "key": "edge-computing",
+      "label": "边缘计算",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "边缘节点计算",
+      "aliases": [
+        "edge",
+        "边缘"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 80
+    },
+    {
+      "key": "iac",
+      "label": "基础设施即代码",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "IaC、资源编排",
+      "aliases": [
+        "terraform",
+        "iac",
+        "基础设施即代码"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 90
+    },
+    {
+      "key": "cloud-native",
+      "label": "云原生",
+      "category": "计算与架构",
+      "type": "domain",
+      "description": "云原生综合能力",
+      "aliases": [
+        "cloud native",
+        "云原生"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 100
+    },
+    {
+      "key": "database",
+      "label": "数据库",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "数据库通用",
+      "aliases": [
+        "db",
+        "数据库"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 110
+    },
+    {
+      "key": "relational-db",
+      "label": "关系型数据库",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "SQL/事务/JSON 列",
+      "aliases": [
+        "mysql",
+        "postgresql",
+        "gaussdb",
+        "sql",
+        "关系型"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 120
+    },
+    {
+      "key": "nosql",
+      "label": "NoSQL",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "文档/键值/宽表",
+      "aliases": [
+        "mongodb",
+        "redis",
+        "nosql"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 130
+    },
+    {
+      "key": "object-storage",
+      "label": "对象存储",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "文件/对象存储",
+      "aliases": [
+        "oss",
+        "s3",
+        "obs",
+        "对象存储"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 140
+    },
+    {
+      "key": "data-warehouse",
+      "label": "数据仓库",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "数仓与 OLAP",
+      "aliases": [
+        "warehouse",
+        "数仓"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 150
+    },
+    {
+      "key": "bigdata",
+      "label": "大数据",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "大数据处理生态",
+      "aliases": [
+        "hadoop",
+        "spark",
+        "flink",
+        "大数据"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 160
+    },
+    {
+      "key": "cache",
+      "label": "缓存",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "缓存与加速",
+      "aliases": [
+        "redis cache",
+        "缓存"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 170
+    },
+    {
+      "key": "search",
+      "label": "搜索",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "全文/向量检索",
+      "aliases": [
+        "search",
+        "检索",
+        "es"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 180
+    },
+    {
+      "key": "etl",
+      "label": "数据集成",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "ETL/管道/同步",
+      "aliases": [
+        "etl",
+        "data pipeline",
+        "数据集成"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 190
+    },
+    {
+      "key": "data-analysis",
+      "label": "数据分析",
+      "category": "数据与存储",
+      "type": "domain",
+      "description": "分析/BI/可视化",
+      "aliases": [
+        "bi",
+        "analytics",
+        "数据分析"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 200
+    },
+    {
+      "key": "llm",
+      "label": "大模型",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "大语言模型基础",
+      "aliases": [
+        "llm",
+        "大模型",
+        "gpt",
+        "盘古"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 210
+    },
+    {
+      "key": "ai-api",
+      "label": "AI API",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "模型推理 API",
+      "aliases": [
+        "inference",
+        "ai api",
+        "模型接口"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 220
+    },
+    {
+      "key": "ai-agent",
+      "label": "AI Agent",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "智能体开发",
+      "aliases": [
+        "agent",
+        "智能体",
+        "agentic"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 230
+    },
+    {
+      "key": "mcp",
+      "label": "MCP 协议",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "模型上下文协议",
+      "aliases": [
+        "model context protocol",
+        "mcp"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 240
+    },
+    {
+      "key": "prompt-engineering",
+      "label": "提示词工程",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "提示词设计",
+      "aliases": [
+        "prompt",
+        "提示词"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 250
+    },
+    {
+      "key": "rag",
+      "label": "RAG 检索增强",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "检索增强生成",
+      "aliases": [
+        "rag",
+        "retrieval",
+        "检索增强"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 260
+    },
+    {
+      "key": "fine-tuning",
+      "label": "模型微调",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "微调与对齐",
+      "aliases": [
+        "finetune",
+        "微调",
+        "sft"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 270
+    },
+    {
+      "key": "ai-coding",
+      "label": "AI 编程",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "AI 辅助编码",
+      "aliases": [
+        "coding agent",
+        "ai coding",
+        "AI 编程"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 280
+    },
+    {
+      "key": "multimodal",
+      "label": "多模态",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "文/图/音/视频",
+      "aliases": [
+        "multimodal",
+        "多模态",
+        "vision"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 290
+    },
+    {
+      "key": "vector-db",
+      "label": "向量数据库",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "向量检索存储",
+      "aliases": [
+        "vector",
+        "向量库",
+        "pgvector"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 300
+    },
+    {
+      "key": "mlops",
+      "label": "MLOps",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "模型工程化",
+      "aliases": [
+        "mlops",
+        "model serving"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 310
+    },
+    {
+      "key": "computer-vision",
+      "label": "计算机视觉",
+      "category": "AI 与智能",
+      "type": "domain",
+      "description": "CV 应用",
+      "aliases": [
+        "cv",
+        "vision",
+        "计算机视觉"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 320
+    },
+    {
+      "key": "devops",
+      "label": "DevOps",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "DevOps 综合",
+      "aliases": [
+        "devops"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 330
+    },
+    {
+      "key": "cicd",
+      "label": "CI/CD",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "持续集成交付",
+      "aliases": [
+        "ci",
+        "cd",
+        "pipeline",
+        "流水线"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 340
+    },
+    {
+      "key": "git",
+      "label": "代码托管",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "Git 与托管平台",
+      "aliases": [
+        "git",
+        "github",
+        "gitcode",
+        "代码托管"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 350
+    },
+    {
+      "key": "observability",
+      "label": "可观测性",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "监控/日志/链路",
+      "aliases": [
+        "observability",
+        "可观测",
+        "tracing"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 360
+    },
+    {
+      "key": "monitoring",
+      "label": "监控告警",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "指标与告警",
+      "aliases": [
+        "monitor",
+        "alert",
+        "监控"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 370
+    },
+    {
+      "key": "logging",
+      "label": "日志管理",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "日志采集分析",
+      "aliases": [
+        "log",
+        "日志",
+        "lts"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 380
+    },
+    {
+      "key": "testing",
+      "label": "测试",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "自动化测试",
+      "aliases": [
+        "test",
+        "pytest",
+        "junit",
+        "测试"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 390
+    },
+    {
+      "key": "api-testing",
+      "label": "API 测试",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "接口测试",
+      "aliases": [
+        "api test",
+        "postman",
+        "接口测试"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 400
+    },
+    {
+      "key": "security-scan",
+      "label": "安全扫描",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "漏洞扫描",
+      "aliases": [
+        "scan",
+        "vulnerability",
+        "扫描"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 410
+    },
+    {
+      "key": "release",
+      "label": "发布管理",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "版本发布",
+      "aliases": [
+        "release",
+        "发布"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 420
+    },
+    {
+      "key": "iam",
+      "label": "访问控制",
+      "category": "工程与 DevOps",
+      "type": "domain",
+      "description": "IAM/权限管理",
+      "aliases": [
+        "iam",
+        "权限",
+        "rbac"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 430
+    },
+    {
+      "key": "frontend",
+      "label": "前端开发",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "前端通用",
+      "aliases": [
+        "frontend",
+        "web",
+        "前端"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 440
+    },
+    {
+      "key": "ui-framework",
+      "label": "UI 框架",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "组件/UI 框架",
+      "aliases": [
+        "element",
+        "antd",
+        "vue",
+        "react",
+        "ui"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 450
+    },
+    {
+      "key": "web-framework",
+      "label": "Web 框架",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "Web 应用框架",
+      "aliases": [
+        "nextjs",
+        "nuxt",
+        "express",
+        "web 框架"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 460
+    },
+    {
+      "key": "mobile",
+      "label": "移动端",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "移动开发",
+      "aliases": [
+        "mobile",
+        "ios",
+        "android",
+        "移动"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 470
+    },
+    {
+      "key": "performance",
+      "label": "性能优化",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "前端性能",
+      "aliases": [
+        "perf",
+        "性能"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 480
+    },
+    {
+      "key": "animation",
+      "label": "动效",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "动画与特效",
+      "aliases": [
+        "animation",
+        "canvas",
+        "动效"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 490
+    },
+    {
+      "key": "design-system",
+      "label": "设计系统",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "设计规范",
+      "aliases": [
+        "design",
+        "设计系统"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 500
+    },
+    {
+      "key": "cross-platform",
+      "label": "跨平台",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "跨端方案",
+      "aliases": [
+        "cross platform",
+        "flutter",
+        "跨平台"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 510
+    },
+    {
+      "key": "ssg",
+      "label": "静态站点",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "静态生成",
+      "aliases": [
+        "ssg",
+        "vite",
+        "静态"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 520
+    },
+    {
+      "key": "server-render",
+      "label": "服务端渲染",
+      "category": "前端与体验",
+      "type": "domain",
+      "description": "SSR/SSG",
+      "aliases": [
+        "ssr",
+        "服务端渲染"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 530
+    },
+    {
+      "key": "security",
+      "label": "安全",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "安全综合",
+      "aliases": [
+        "security",
+        "安全"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 540
+    },
+    {
+      "key": "identity",
+      "label": "身份认证",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "登录/SSO/OAuth",
+      "aliases": [
+        "oauth",
+        "sso",
+        "登录",
+        "identity"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 550
+    },
+    {
+      "key": "authn-authz",
+      "label": "认证授权",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "鉴权与授权",
+      "aliases": [
+        "auth",
+        "鉴权",
+        "jwt"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 560
+    },
+    {
+      "key": "encryption",
+      "label": "加密",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "数据加密",
+      "aliases": [
+        "encrypt",
+        "加密",
+        "kms"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 570
+    },
+    {
+      "key": "compliance",
+      "label": "合规",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "合规治理",
+      "aliases": [
+        "compliance",
+        "合规"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 580
+    },
+    {
+      "key": "devsecops",
+      "label": "DevSecOps",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "安全左移",
+      "aliases": [
+        "devsecops"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 590
+    },
+    {
+      "key": "secret-management",
+      "label": "密钥管理",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "凭据管理",
+      "aliases": [
+        "secret",
+        "密钥",
+        "vault"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 600
+    },
+    {
+      "key": "waf",
+      "label": "Web 防火墙",
+      "category": "安全与合规",
+      "type": "domain",
+      "description": "WAF/防护",
+      "aliases": [
+        "waf",
+        "防火墙",
+        "防护"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 610
+    },
+    {
+      "key": "networking",
+      "label": "网络",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "网络基础",
+      "aliases": [
+        "network",
+        "网络"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 620
+    },
+    {
+      "key": "cdn",
+      "label": "CDN",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "内容分发",
+      "aliases": [
+        "cdn",
+        "内容分发"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 630
+    },
+    {
+      "key": "load-balance",
+      "label": "负载均衡",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "流量分发",
+      "aliases": [
+        "lb",
+        "elb",
+        "负载均衡"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 640
+    },
+    {
+      "key": "dns",
+      "label": "DNS",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "域名解析",
+      "aliases": [
+        "dns",
+        "域名解析"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 650
+    },
+    {
+      "key": "vpc",
+      "label": "私有网络",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "VPC/子网",
+      "aliases": [
+        "vpc",
+        "私有网络"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 660
+    },
+    {
+      "key": "api-gateway",
+      "label": "API 网关",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "网关/限流/鉴权",
+      "aliases": [
+        "apig",
+        "gateway",
+        "网关"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 670
+    },
+    {
+      "key": "domain",
+      "label": "域名",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "域名与证书",
+      "aliases": [
+        "domain",
+        "域名",
+        "ssl"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 680
+    },
+    {
+      "key": "websocket",
+      "label": "实时通信",
+      "category": "网络与边缘",
+      "type": "domain",
+      "description": "WebSocket/长连接",
+      "aliases": [
+        "websocket",
+        "实时通信"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 690
+    },
+    {
+      "key": "ide",
+      "label": "开发工具",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "IDE/编辑器",
+      "aliases": [
+        "ide",
+        "vscode",
+        "编辑器"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 700
+    },
+    {
+      "key": "ai-tool",
+      "label": "AI 工具",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "AI 生产力工具",
+      "aliases": [
+        "copilot",
+        "ai tool",
+        "AI 工具"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 710
+    },
+    {
+      "key": "lowcode",
+      "label": "低代码",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "低代码平台",
+      "aliases": [
+        "lowcode",
+        "低代码"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 720
+    },
+    {
+      "key": "collaboration",
+      "label": "协作",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "团队协作",
+      "aliases": [
+        "collab",
+        "协作"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 730
+    },
+    {
+      "key": "docs",
+      "label": "文档",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "文档工具",
+      "aliases": [
+        "docs",
+        "文档",
+        "wiki"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 740
+    },
+    {
+      "key": "api-design",
+      "label": "API 设计",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "API 设计",
+      "aliases": [
+        "api design",
+        "api 设计"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 750
+    },
+    {
+      "key": "openapi",
+      "label": "OpenAPI",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "OpenAPI 规范",
+      "aliases": [
+        "openapi",
+        "swagger"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 760
+    },
+    {
+      "key": "sdk",
+      "label": "SDK",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "SDK 与客户端库",
+      "aliases": [
+        "sdk",
+        "client"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 770
+    },
+    {
+      "key": "open-source",
+      "label": "开源",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "开源生态",
+      "aliases": [
+        "open source",
+        "开源"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 780
+    },
+    {
+      "key": "code-review",
+      "label": "代码评审",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "评审与合并",
+      "aliases": [
+        "review",
+        "pr",
+        "代码评审"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 790
+    },
+    {
+      "key": "huaweicloud",
+      "label": "华为云",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "华为云全系服务",
+      "aliases": [
+        "华为云",
+        "huawei cloud"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 800
+    },
+    {
+      "key": "aws",
+      "label": "AWS",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "亚马逊云服务",
+      "aliases": [
+        "amazon",
+        "aws"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 810
+    },
+    {
+      "key": "azure",
+      "label": "微软 Azure",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "微软云",
+      "aliases": [
+        "microsoft",
+        "azure"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 820
+    },
+    {
+      "key": "google-cloud",
+      "label": "Google Cloud",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "谷歌云",
+      "aliases": [
+        "google cloud",
+        "gcp"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 830
+    },
+    {
+      "key": "aliyun",
+      "label": "阿里云",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "阿里云",
+      "aliases": [
+        "阿里云",
+        "aliyun",
+        "alibaba"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 840
+    },
+    {
+      "key": "tencent-cloud",
+      "label": "腾讯云",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "腾讯云",
+      "aliases": [
+        "腾讯云",
+        "tencent"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 850
+    },
+    {
+      "key": "vercel",
+      "label": "Vercel",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "前端托管平台",
+      "aliases": [
+        "vercel"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 860
+    },
+    {
+      "key": "github",
+      "label": "GitHub",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "代码托管平台",
+      "aliases": [
+        "github"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 870
+    },
+    {
+      "key": "gitcode",
+      "label": "GitCode",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "代码托管/开放平台",
+      "aliases": [
+        "gitcode"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 880
+    },
+    {
+      "key": "docker",
+      "label": "Docker",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "容器技术公司",
+      "aliases": [
+        "docker inc"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 890
+    },
+    {
+      "key": "framework",
+      "label": "应用框架",
+      "category": "开发工具与协作",
+      "type": "domain",
+      "description": "通用应用开发框架",
+      "aliases": [
+        "framework",
+        "框架",
+        "开发框架"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 890
+    },
+    {
+      "key": "anthropic",
+      "label": "Anthropic",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "Claude / MCP 发起方",
+      "aliases": [
+        "anthropic",
+        "claude"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 900
+    },
+    {
+      "key": "openai",
+      "label": "OpenAI",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "GPT 系列",
+      "aliases": [
+        "openai",
+        "gpt"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 910
+    },
+    {
+      "key": "langchain",
+      "label": "LangChain",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "LLM 应用框架",
+      "aliases": [
+        "langchain",
+        "langgraph"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 920
+    },
+    {
+      "key": "cncf",
+      "label": "CNCF",
+      "category": "厂商",
+      "type": "vendor",
+      "description": "云原生基金会",
+      "aliases": [
+        "cncf",
+        "kubernetes 社区"
+      ],
+      "status": "active",
+      "is_system": true,
+      "sort_order": 930
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "whatsawesome-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Whats Awesome 迭代一:技能对象 API(后续迁移华为云 FunctionGraph)",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "skills": [
+    {
+      "name": "华为云 FunctionGraph",
+      "slug": "huawei-functiongraph",
+      "vendor_name": "Huawei Cloud",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/huawei-functiongraph/200/200",
+      "category_tags": [ { "key": "serverless", "label": "Serverless 无服务器" }, { "key": "faas", "label": "FaaS 函数计算" } ],
+      "difficulty_lv": 15,
+      "importance": { "score": 8.5, "basis": "Serverless 是 AI 应用与自动化任务的核心底座,支持事件驱动与 HTTP 触发,云原生入门必备", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "华为云函数工作流 FunctionGraph,基于事件驱动的 Serverless 计算服务,支持 HTTP/定时/消息/OBS 等多种触发器,按调用计费,零服务器运维。官方支持一键部署 MCP Server。",
+        "official_url": "https://www.huaweicloud.com/product/functiongraph.html",
+        "repo_url": "https://github.com/huaweicloud/FunctionGraph",
+        "ecosystem": "支持 Python / Node.js / Java / Go 运行时;与 APIG、OBS、SMN、DMS 深度集成;应用中心提供 MCP Server / Agent 一键模板",
+        "hello_world": "# FunctionGraph HTTP 函数(Python)\nimport json\n\ndef handler(event, context):\n    return {\n        \"statusCode\": 200,\n        \"headers\": { \"Content-Type\": \"application/json\" },\n        \"body\": json.dumps({ \"hello\": \"whatsawesome\" })\n    }",
+        "learning_prompt": "你是一名云原生讲师。请带我从零上手华为云 FunctionGraph:1) 说明它与传统服务器的区别;2) 用最简单的话解释事件驱动;3) 给我一个用 Python 写 HTTP 函数并部署的完整步骤(含创建函数、配置触发器、测试);4) 出一个练习:写一个定时触发的函数,每天打印当前时间并写入 OBS,告诉我验证方法。每步给我可直接执行的命令或配置。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "华为云盘古大模型 API",
+      "slug": "huawei-pangu-api",
+      "vendor_name": "Huawei Cloud",
+      "vendor_type": "ai",
+      "logo_url": "https://picsum.photos/seed/huawei-pangu-api/200/200",
+      "category_tags": [ { "key": "llm", "label": "大模型 LLM" }, { "key": "ai-api", "label": "AI API" } ],
+      "difficulty_lv": 25,
+      "importance": { "score": 9.5, "basis": "大模型 API 是 AI 时代最核心的必备能力,盘古提供 OpenAI 兼容接口,是华为云 AI 生态入口", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "华为云盘古大模型,通过 ModelArts Studio 提供推理 API。支持 API Key 认证(开放给第三方)与 OpenAI 兼容的 V2 接口(/api/v2/chat/completions),可用于对话、摘要、评估等场景。",
+        "official_url": "https://www.huaweicloud.com/product/pangu.html",
+        "repo_url": "https://github.com/huaweicloud/pangu-models",
+        "ecosystem": "ModelArts Studio 大模型开发平台;V1/V2 推理接口;API Key 认证;支持文本对话/多模态/视频生成",
+        "hello_world": "# 盘古大模型 API 调用(Python + requests)\nimport requests\n\nurl = \"https://{endpoint}/api/v2/chat/completions\"\nheaders = { \"Content-Type\": \"application/json\", \"Authorization\": \"Bearer {API_KEY}\" }\nbody = { \"messages\": [ { \"role\": \"user\", \"content\": \"用一句话介绍华为云盘古大模型\" } ] }\nresp = requests.post(url, headers=headers, json=body)\nprint(resp.json()[\"choices\"][0][\"message\"][\"content\"])",
+        "learning_prompt": "你是华为云 AI 专家。请教我把盘古大模型 API 接入自己的应用:1) 如何开通并创建 API Key;2) 如何用 Python 完成一次对话调用(含鉴权头);3) V1 和 V2 接口的区别与选择;4) 出一个小练习:让模型给一段文本打分(1-10 分)并返回 JSON。请给我可直接运行的代码。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "华为云 GaussDB",
+      "slug": "huawei-gaussdb",
+      "vendor_name": "Huawei Cloud",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/huawei-gaussdb/200/200",
+      "category_tags": [ { "key": "database", "label": "数据库" } ],
+      "difficulty_lv": 30,
+      "importance": { "score": 8.5, "basis": "数据是应用的地基,GaussDB 提供 MySQL/openGauss 双内核,JSONB 支持对象化建模,是后端开发核心技能", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "华为云 GaussDB 关系型数据库,提供 GaussDB(for MySQL)与 GaussDB(for openGauss)两种内核。支持 JSON/JSONB 列、事务、高可用,可用于对象化建模与业务主库。",
+        "official_url": "https://www.huaweicloud.com/product/gaussdb.html",
+        "repo_url": "https://gitee.com/opengauss/openGauss-server",
+        "ecosystem": "MySQL / openGauss 双内核;DAS 数据管理;备份恢复;与 CodeArts、FunctionGraph 集成",
+        "hello_world": "-- GaussDB(for MySQL) 建表 + JSON 列示例\nCREATE TABLE skill (\n  id BIGINT AUTO_INCREMENT PRIMARY KEY,\n  slug VARCHAR(128) UNIQUE,\n  name VARCHAR(255),\n  category_tags JSON,\n  doc JSON,\n  status VARCHAR(16) DEFAULT 'draft'\n);\nINSERT INTO skill (slug, name, category_tags, doc)\nVALUES ('hello-gaussdb', 'Hello GaussDB', '[\"database\"]', '{\"summary\":\"第一个 GaussDB 技能\"}');",
+        "learning_prompt": "你是数据库工程师。请带我从零学会华为云 GaussDB:1) 解释 GaussDB(for MySQL) 与 openGauss 内核区别;2) 教我创建实例并连接(给出连接串);3) 讲清楚 JSON 列的用法和索引(含 GIN/虚拟列);4) 出练习:设计一张 skill 表并用 JSON 列存标签,查询某标签下的技能。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "华为云 OBS 对象存储",
+      "slug": "huawei-obs",
+      "vendor_name": "Huawei Cloud",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/huawei-obs/200/200",
+      "category_tags": [ { "key": "object-storage", "label": "对象存储" } ],
+      "difficulty_lv": 10,
+      "importance": { "score": 8, "basis": "文件/图片/日志存储的标配能力,配合预签名 URL 实现安全上传,是通用基础技能", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "华为云对象存储服务 OBS,海量、安全、低成本的文件存储。支持预签名 URL 直传、静态网站托管、与 FunctionGraph 事件联动,是上传/存储场景的标准选择。",
+        "official_url": "https://www.huaweicloud.com/product/obs.html",
+        "repo_url": "https://github.com/huaweicloud/obssdk-python",
+        "ecosystem": "Python / Java / Node.js / Go SDK;预签名 URL;生命周期管理;CDN 联动",
+        "hello_world": "# OBS 预签名上传 URL(Python)\nfrom obs import ObsClient\n\nobsClient = ObsClient(access_key_id=\"AK\", secret_access_key=\"SK\", server=\"https://obs.cn-north-4.myhuaweicloud.com\")\nurl = obsClient.createSignedUrl(\"PUT\", bucketName=\"my-bucket\", objectKey=\"upload/hello.txt\", expires=3600)\nprint(url)",
+        "learning_prompt": "你是云存储专家。请教我在 OBS 上做安全的文件上传:1) 创建桶并设置权限的要点;2) 什么是预签名 URL,为什么安全;3) 用 Python 生成一个上传 URL 并让前端直传;4) 练习:配置生命周期,让临时文件 7 天后自动删除。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "AWS Lambda",
+      "slug": "aws-lambda",
+      "vendor_name": "AWS",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/aws-lambda/200/200",
+      "category_tags": [ { "key": "serverless", "label": "Serverless 无服务器" }, { "key": "faas", "label": "FaaS 函数计算" } ],
+      "difficulty_lv": 20,
+      "importance": { "score": 9, "basis": "Serverless 事实标准,生态最成熟,是理解云原生计算的参照系", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "AWS Lambda 是业界 Serverless 计算的标杆服务,支持多种语言,与 API Gateway、S3、DynamoDB 深度集成,按调用与时长计费。",
+        "official_url": "https://aws.amazon.com/lambda/",
+        "repo_url": "https://github.com/aws/aws-lambda-python-runtime-interface-client",
+        "ecosystem": "Python/Node/Java/Go/.NET;SAM / CDK;与 S3、SQS、API Gateway 集成;Lambda Layers 复用依赖",
+        "hello_world": "# AWS Lambda(Python)\ndef lambda_handler(event, context):\n    return {\n        \"statusCode\": 200,\n        \"body\": \"Hello from Whats Awesome on AWS Lambda!\"\n    }",
+        "learning_prompt": "你是 AWS 专家。请带我从零学会 AWS Lambda:1) 讲清 Lambda 与 EC2 的区别;2) 教我通过 AWS CLI 部署一个 Python 函数并配置 API Gateway 触发;3) 解释计费与冷启动;4) 练习:写一个定时函数读取 S3 文件并统计行数。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "Microsoft Azure Functions",
+      "slug": "azure-functions",
+      "vendor_name": "Microsoft Azure",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/azure-functions/200/200",
+      "category_tags": [ { "key": "serverless", "label": "Serverless 无服务器" }, { "key": "faas", "label": "FaaS 函数计算" } ],
+      "difficulty_lv": 20,
+      "importance": { "score": 8.5, "basis": "企业级 Serverless 方案,与微软生态(Teams/Office)集成紧密", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "Azure Functions 是微软的 Serverless 计算服务,支持 HTTP/定时/队列等触发器,与 Azure 全家桶集成,尤其适合企业级与微软生态场景。",
+        "official_url": "https://azure.microsoft.com/products/functions/",
+        "repo_url": "https://github.com/Azure/azure-functions-python-worker",
+        "ecosystem": "Python/C#/Node/Java;Azure DevOps;Durable Functions 编排;与 Service Bus、Cosmos DB 集成",
+        "hello_world": "# Azure Functions HTTP 触发器(Python)\nimport azure.functions as func\n\ndef main(req: func.HttpRequest) -> func.HttpResponse:\n    return func.HttpResponse(\"Hello from Whats Awesome on Azure Functions!\")",
+        "learning_prompt": "你是 Azure 专家。请教我 Azure Functions 入门:1) 本地用 Core Tools 创建并运行一个 HTTP 函数;2) 部署到 Azure 的步骤;3) 与华为云 FunctionGraph 对比的异同;4) 练习:写一个定时函数,把消息写入队列。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "Google Cloud Functions",
+      "slug": "google-cloud-functions",
+      "vendor_name": "Google Cloud",
+      "vendor_type": "cloud",
+      "logo_url": "https://picsum.photos/seed/google-cloud-functions/200/200",
+      "category_tags": [ { "key": "serverless", "label": "Serverless 无服务器" }, { "key": "faas", "label": "FaaS 函数计算" } ],
+      "difficulty_lv": 18,
+      "importance": { "score": 8, "basis": "GCP 生态入口,与 Firebase/Vertex AI 集成,是学习多云 Serverless 的参照", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "Google Cloud Functions 是 GCP 的轻量 Serverless 服务,与 Firebase 深度集成,适合事件驱动与移动/Web 后端场景。",
+        "official_url": "https://cloud.google.com/functions",
+        "repo_url": "https://github.com/GoogleCloudPlatform/functions-framework-python",
+        "ecosystem": "Functions Framework;Firebase;Eventarc;与 Pub/Sub、Cloud Storage 集成",
+        "hello_world": "# Google Cloud Functions(Python)\ndef hello_world(request):\n    return \"Hello from Whats Awesome on Google Cloud Functions!\"",
+        "learning_prompt": "你是 GCP 专家。请教我 Cloud Functions:1) 用 gcloud CLI 部署一个 HTTP 函数;2) 如何从 Cloud Storage 事件触发;3) 与 AWS Lambda 的差异;4) 练习:写一个图片上传后自动生成缩略图的函数。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "Vercel",
+      "slug": "vercel",
+      "vendor_name": "Vercel",
+      "vendor_type": "devtool",
+      "logo_url": "https://picsum.photos/seed/vercel/200/200",
+      "category_tags": [ { "key": "frontend", "label": "前端开发" }, { "key": "serverless", "label": "Serverless 无服务器" } ],
+      "difficulty_lv": 8,
+      "importance": { "score": 8.5, "basis": "前端部署体验最佳的平台,一键发布,是开发者日常必备工具", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "Vercel 是前端部署与托管平台,与 Git 深度集成,支持 Next.js/Vue/静态站点一键发布,自动 HTTPS、CDN、Preview 环境。",
+        "official_url": "https://vercel.com",
+        "repo_url": "https://github.com/vercel/vercel",
+        "ecosystem": "Next.js 官方平台;Vercel CLI;Edge Functions;Serverless Functions 目录",
+        "hello_world": "# 用 Vercel CLI 部署\nnpm i -g vercel\nvercel login\nvercel --prod\n# 把任意静态目录 / Vue 项目推到线上,自动生成 URL",
+        "learning_prompt": "你是前端部署专家。请教我:1) Vercel 与自建服务器的区别;2) 把一个 Vite 项目推到 Vercel 的完整步骤(含环境变量配置);3) Preview 部署怎么用;4) 练习:部署一个带 API 路由的小应用,体验 Serverless Function。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "GitHub Actions",
+      "slug": "github-actions",
+      "vendor_name": "GitHub",
+      "vendor_type": "devtool",
+      "logo_url": "https://picsum.photos/seed/github-actions/200/200",
+      "category_tags": [ { "key": "cicd", "label": "CI/CD" }, { "key": "devops", "label": "DevOps" } ],
+      "difficulty_lv": 22,
+      "importance": { "score": 9, "basis": "CI/CD 是工程化核心能力,自动化测试/部署是 AI 时代开发者的基本功", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "GitHub Actions 是 GitHub 内置的 CI/CD 平台,用 YAML 定义工作流,支持任意触发事件,与仓库、Release、Issue 深度集成,生态有海量现成 Action。",
+        "official_url": "https://github.com/features/actions",
+        "repo_url": "https://github.com/actions",
+        "ecosystem": "Marketplace Action 生态;矩阵构建;自托管 Runner;环境与密钥管理",
+        "hello_world": "# .github/workflows/ci.yml\nname: CI\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with: { node-version: 20 }\n      - run: npm ci\n      - run: npm test",
+        "learning_prompt": "你是 DevOps 工程师。请教我 GitHub Actions:1) workflow/job/step 概念;2) 写一个 push 自动跑测试的 CI;3) 如何在 Actions 里安全使用密钥(secrets);4) 练习:加一个 Job 在 main 分支构建后自动部署到 Vercel/华为云。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "GitCode",
+      "slug": "gitcode",
+      "vendor_name": "GitCode",
+      "vendor_type": "devtool",
+      "logo_url": "https://picsum.photos/seed/gitcode/200/200",
+      "category_tags": [ { "key": "git", "label": "代码托管" } ],
+      "difficulty_lv": 5,
+      "importance": { "score": 7.5, "basis": "代码托管与 OAuth 登录的基础设施,是开发者身份的起点", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "GitCode 是代码托管与开发者协作平台,提供 Git 仓库、OAuth 2.0 开放平台、OpenAPI(v5),支持第三方应用接入与单点登录。",
+        "official_url": "https://gitcode.com",
+        "repo_url": "https://github.com/gitcode-org/gitcode",
+        "ecosystem": "OAuth 2.0 授权码流程;/api/v5/user 用户接口;OpenAPI SDK;Webhooks",
+        "hello_world": "# GitCode OAuth 授权码流程\n# 1. 跳转授权\nGET https://gitcode.com/oauth/authorize?client_id={id}&redirect_uri={uri}&response_type=code&scope=user&state={rand}\n# 2. 换 token\nPOST https://gitcode.com/oauth/token?grant_type=authorization_code&code={code}&client_id={id}&client_secret={secret}\n# 3. 取用户信息\nGET https://api.gitcode.com/api/v5/user  Authorization: Bearer {access_token}",
+        "learning_prompt": "你是开放平台专家。请教我:1) GitCode OAuth 登录的完整流程与 state 防 CSRF 的意义;2) 如何创建一个 OAuth 应用拿到 client_id/secret;3) 写一个最小后端,完成第三方登录回跳;4) 练习:实现登录后展示用户头像和用户名。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "Docker",
+      "slug": "docker",
+      "vendor_name": "Docker",
+      "vendor_type": "devtool",
+      "logo_url": "https://picsum.photos/seed/docker/200/200",
+      "category_tags": [ { "key": "container", "label": "容器" }, { "key": "cloud-native", "label": "云原生" } ],
+      "difficulty_lv": 28,
+      "importance": { "score": 9, "basis": "容器化是现代应用交付的标配,不理解 Docker 就难以理解云原生与微服务", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "Docker 是容器化事实标准,把应用与依赖打包成镜像,实现一次构建、随处运行。是云原生、微服务、CI/CD 的共同地基。",
+        "official_url": "https://www.docker.com",
+        "repo_url": "https://github.com/docker",
+        "ecosystem": "Dockerfile / Compose / Swarm;镜像仓库(Docker Hub / SWR);与 K8s、CI 深度集成",
+        "hello_world": "# Dockerfile 示例\nFROM python:3.12-slim\nWORKDIR /app\nCOPY . .\nRUN pip install -r requirements.txt\nCMD [\"python\", \"app.py\"]\n# 构建与运行: docker build -t hello . && docker run -p 8000:8000 hello",
+        "learning_prompt": "你是容器技术讲师。请带我从零学会 Docker:1) 镜像/容器/仓库概念;2) 写一个 Python 应用的 Dockerfile 并构建运行;3) docker-compose 编排两个服务(应用+数据库);4) 练习:把构建好的镜像推到华为云 SWR 镜像仓库。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "Kubernetes",
+      "slug": "kubernetes",
+      "vendor_name": "CNCF",
+      "vendor_type": "devtool",
+      "logo_url": "https://picsum.photos/seed/kubernetes/200/200",
+      "category_tags": [ { "key": "container", "label": "容器" }, { "key": "cloud-native", "label": "云原生" } ],
+      "difficulty_lv": 55,
+      "importance": { "score": 8.5, "basis": "云原生编排的事实标准,掌握 K8s 是进阶工程能力的标志", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "Kubernetes(K8s)是容器编排的事实标准,提供自动部署、扩缩容、服务发现、滚动更新。华为云 CCE 提供托管 K8s 服务。",
+        "official_url": "https://kubernetes.io",
+        "repo_url": "https://github.com/kubernetes/kubernetes",
+        "ecosystem": "kubectl / Helm;Pod/Service/Deployment;华为云 CCE;与 ServiceMesh、Observability 生态",
+        "hello_world": "# kubectl 快速上手\nkubectl create deployment hello --image=nginx\nkubectl expose deployment hello --port=80 --type=LoadBalancer\nkubectl get pods,svc\nkubectl scale deployment hello --replicas=3",
+        "learning_prompt": "你是云原生专家。请教我 K8s 核心概念:1) Pod/Deployment/Service 的关系;2) 用 kubectl 部署一个 Nginx 并暴露服务;3) 什么是滚动更新与回滚;4) 练习:在华为云 CCE 上创建一个集群并部署应用。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "MCP 模型上下文协议",
+      "slug": "mcp",
+      "vendor_name": "Anthropic / Open Standard",
+      "vendor_type": "ai",
+      "logo_url": "https://picsum.photos/seed/mcp/200/200",
+      "category_tags": [ { "key": "mcp", "label": "MCP 模型上下文协议" }, { "key": "ai-agent", "label": "AI Agent" }, { "key": "ai-api", "label": "AI API" } ],
+      "difficulty_lv": 40,
+      "importance": { "score": 10, "basis": "MCP 是 AI 连接外部世界的标准协议,本项目闯关判定即基于 MCP,是 AI 时代必备技能", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "MCP(Model Context Protocol)是让 LLM 与外部工具/数据源标准交互的开放协议,被誉为 AI 世界的 USB-C。华为云 FunctionGraph 支持一键部署 MCP Server。",
+        "official_url": "https://modelcontextprotocol.io",
+        "repo_url": "https://github.com/modelcontextprotocol/python-sdk",
+        "ecosystem": "Python/TS SDK;Streamable HTTP / SSE / stdio 传输;官方服务器模板;华为云 FunctionGraph 一键部署",
+        "hello_world": "# MCP Server 最小示例(Python)\nfrom mcp.server.fastmcp import FastMCP\n\nmcp = FastMCP(\"hello\")\n\n@mcp.tool()\ndef greet(name: str) -> str:\n    \"\"\"向用户问好\"\"\"\n    return f\"Hello, {name}!\"\n\nmcp.run(transport=\"streamable-http\")",
+        "learning_prompt": "你是 MCP 协议专家。请教我从零搭建一个 MCP Server:1) 什么是 MCP,和 API 有什么区别;2) 用 Python SDK 写一个带 2 个工具的 Server;3) 如何让客户端(Cherry Studio / 自己的 Agent)连上并调用;4) 练习:写一个 MCP 工具,输入技能名返回技能简介,然后用 FunctionGraph 部署。"
+      },
+      "status": "published",
+      "related_news": []
+    },
+    {
+      "name": "LangChain",
+      "slug": "langchain",
+      "vendor_name": "LangChain",
+      "vendor_type": "ai",
+      "logo_url": "https://picsum.photos/seed/langchain/200/200",
+      "category_tags": [ { "key": "framework", "label": "应用框架" }, { "key": "llm", "label": "大模型 LLM" }, { "key": "ai-agent", "label": "AI Agent" } ],
+      "difficulty_lv": 45,
+      "importance": { "score": 9.5, "basis": "LLM 应用框架的事实标准,Agent/工具调用/记忆的通用抽象,AI 应用开发必备", "evaluated_at": "2026-08-13" },
+      "doc": {
+        "summary": "LangChain 是构建 LLM 应用的主流框架,提供模型调用、提示词管理、链、Agent、记忆、工具调用等抽象,支持对接任意大模型 API(含盘古)。",
+        "official_url": "https://www.langchain.com",
+        "repo_url": "https://github.com/langchain-ai/langchain",
+        "ecosystem": "LangChain / LangGraph / LangSmith;大量集成包;与 OpenAI 兼容 API 无缝对接",
+        "hello_world": "# LangChain 最小示例(Python)\nfrom langchain_openai import ChatOpenAI\n\nllm = ChatOpenAI(\n    base_url=\"https://{endpoint}/api/v2\",\n    api_key=\"{API_KEY}\",\n    model=\"pangu\",\n)\nresp = llm.invoke(\"用一句话介绍 LangChain\")\nprint(resp.content)",
+        "learning_prompt": "你是 LLM 应用架构师。请教我:1) LangChain 解决什么问题;2) 如何把盘古大模型(OpenAI 兼容接口)接入 LangChain;3) 写一个带记忆的对话链;4) 练习:用 LangChain 写一个 Agent,让它调用我定义的 MCP 工具完成一个任务。"
+      },
+      "status": "published",
+      "related_news": []
+    }
+  ]
+}

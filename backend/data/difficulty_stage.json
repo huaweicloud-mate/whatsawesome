@@ -1,0 +1,12 @@
+{
+  "stages": [
+    { "stage": "炼气期", "min_lv": 1, "max_lv": 10, "icon": "🔥", "color": "#7c9a3d", "desc": "入门筑基,掌握基础工具与概念" },
+    { "stage": "筑基期", "min_lv": 11, "max_lv": 20, "icon": "🪨", "color": "#4a90d9", "desc": "能独立完成小型任务与部署" },
+    { "stage": "结晶期", "min_lv": 21, "max_lv": 30, "icon": "💎", "color": "#7a5fd0", "desc": "理解原理,可搭建完整应用" },
+    { "stage": "具灵期", "min_lv": 31, "max_lv": 40, "icon": "⚡", "color": "#e07b39", "desc": "掌握生态,具备工程化能力" },
+    { "stage": "悟道期", "min_lv": 41, "max_lv": 50, "icon": "🌀", "color": "#d04a7a", "desc": "融会贯通,能设计架构方案" },
+    { "stage": "羽化期", "min_lv": 51, "max_lv": 60, "icon": "🪶", "color": "#b03a8e", "desc": "深入内核,可优化与调优" },
+    { "stage": "登仙期", "min_lv": 61, "max_lv": 70, "icon": "👑", "color": "#c9a227", "desc": "领域专家,能引领技术方向" },
+    { "stage": "神魔期", "min_lv": 71, "max_lv": 100, "icon": "🌌", "color": "#b23b3b", "desc": "开宗立派,定义行业标准" }
+  ]
+}
