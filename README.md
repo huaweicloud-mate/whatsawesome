@@ -23,7 +23,7 @@ whatsawesome/
 ├── backend/     # 华为云 FunctionGraph 函数等    （迭代一: Node Express API）
 ├── frontend/    # 玩家端 + 管理端 SPA            （迭代一: Vue3 技能大厅/详情）
 ├── agents/      # 多 Agent 协作配置 / 提示词     （待建）
-└── dev/         # 项目管理与过程交付件           （独立 dev 分支）
+└── dev/         # 项目管理与过程交付件（规格/设计/任务清单/标签体系/QA截图）
 ```
 
 ## 技术底座
