@@ -34,3 +34,17 @@ test('FunctionGraph handler decodes base64 JSON bodies for portal APIs', async (
   assert.equal(response.statusCode, 201);
   assert.equal(JSON.parse(response.body).player.gitcode_username, 'fg-runner');
 });
+
+test('FunctionGraph handler blocks admin APIs by default for public deployment', async () => {
+  const { handler } = await import('../functiongraph.js');
+
+  const response = await handler({
+    httpMethod: 'GET',
+    path: '/api/admin/skill-candidates',
+    headers: { 'x-admin-id': 'admin-founder' },
+    queryStringParameters: {},
+  });
+
+  assert.equal(response.statusCode, 403);
+  assert.equal(JSON.parse(response.body).error, 'forbidden');
+});

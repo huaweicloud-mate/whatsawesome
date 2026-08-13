@@ -42,6 +42,12 @@ function eventPath(event) {
   return path.startsWith('/') ? path : `/${path}`;
 }
 
+function shouldBlockPublicPath(path) {
+  if (process.env.WA_EXPOSE_ADMIN_APIS === 'true') return false;
+  return path === '/api/admin' || path.startsWith('/api/admin/') ||
+    path === '/api/admin-agent' || path.startsWith('/api/admin-agent/');
+}
+
 async function ensureServer() {
   if (!serverPromise) {
     serverPromise = new Promise(resolve => {
@@ -58,7 +64,18 @@ async function ensureServer() {
 export async function handler(event = {}) {
   const { port } = await ensureServer();
   const method = event.httpMethod || event.requestContext?.http?.method || event.requestContext?.method || 'GET';
-  const url = new URL(`http://127.0.0.1:${port}${eventPath(event)}`);
+  const path = eventPath(event);
+
+  if (shouldBlockPublicPath(path)) {
+    return {
+      statusCode: 403,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ error: 'forbidden', message: 'admin APIs are not exposed by this public FunctionGraph entry' }),
+      isBase64Encoded: false,
+    };
+  }
+
+  const url = new URL(`http://127.0.0.1:${port}${path}`);
 
   if (event.rawQueryString) {
     url.search = event.rawQueryString.startsWith('?') ? event.rawQueryString : `?${event.rawQueryString}`;
