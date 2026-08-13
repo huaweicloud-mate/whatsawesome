@@ -18,6 +18,7 @@ tags:
   - name: Player
   - name: Quest
   - name: Admin
+  - name: Agent
 paths:
   /api/health:
     get:
@@ -274,6 +275,9 @@ paths:
     post:
       tags: [Admin]
       summary: 管理员审核点亮申请
+      x-implementation-status: implemented
+      security:
+        - AdminSession: []
       parameters:
         - $ref: '#/components/parameters/Id'
         - name: x-admin-id
@@ -317,7 +321,274 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/admin/me:
+    get:
+      tags: [Admin]
+      summary: 获取当前管理员身份
+      description: 正式版本由 GitCode OAuth + 服务端 RBAC 判断是否为管理员。
+      x-implementation-status: planned
+      security:
+        - AdminSession: []
+      responses:
+        '200':
+          description: 当前管理员身份和权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminMeResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/admin/skill-candidates:
+    get:
+      tags: [Admin]
+      summary: 查询技能候选
+      description: 管理端读取技能 Agent 通过 /api/agent/skill-candidates 提交的候选。
+      x-implementation-status: planned
+      security:
+        - AdminSession: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CandidateStatus'
+      responses:
+        '200':
+          description: 技能候选列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SkillCandidate'
+
+  /api/admin/skill-candidates/{id}/approve:
+    post:
+      tags: [Admin]
+      summary: 审核通过技能候选
+      x-implementation-status: planned
+      security:
+        - AdminSession: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CandidateReviewRequest'
+      responses:
+        '200':
+          description: 候选已发布或合并到技能库
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateReviewResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/skill-candidates/{id}/reject:
+    post:
+      tags: [Admin]
+      summary: 驳回技能候选
+      x-implementation-status: planned
+      security:
+        - AdminSession: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CandidateReviewRequest'
+      responses:
+        '200':
+          description: 候选已驳回
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateReviewResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/news-candidates:
+    get:
+      tags: [Admin]
+      summary: 查询资讯候选
+      description: 管理端读取技能 Agent 通过 /api/agent/news-candidates 提交的资讯候选。
+      x-implementation-status: planned
+      security:
+        - AdminSession: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CandidateStatus'
+      responses:
+        '200':
+          description: 资讯候选列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NewsCandidate'
+
+  /api/agent/crawl-runs:
+    post:
+      tags: [Agent]
+      summary: 创建 AI 抓取批次
+      description: FunctionGraph 定时任务启动时创建批次，用于后续候选内容追踪。
+      x-implementation-status: planned
+      security:
+        - AgentId: []
+          AgentSignature: []
+          AgentTimestamp: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCrawlRunRequest'
+      responses:
+        '201':
+          description: 抓取批次已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrawlRun'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/agent/skill-candidates:
+    post:
+      tags: [Agent]
+      summary: 技能 Agent 提交技能候选
+      description: 只写入 pending_review，不直接发布到用户面。
+      x-implementation-status: planned
+      security:
+        - AgentId: []
+          AgentSignature: []
+          AgentTimestamp: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SkillCandidateSubmission'
+      responses:
+        '201':
+          description: 技能候选已提交
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillCandidate'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/agent/news-candidates:
+    post:
+      tags: [Agent]
+      summary: 技能 Agent 提交资讯候选
+      description: 只写入 pending_review，管理端审核发布后用户面可见。
+      x-implementation-status: planned
+      security:
+        - AgentId: []
+          AgentSignature: []
+          AgentTimestamp: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsCandidateSubmission'
+      responses:
+        '201':
+          description: 资讯候选已提交
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsCandidate'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/agent/case-candidates:
+    post:
+      tags: [Agent]
+      summary: 技能 Agent 提交案例候选
+      description: 只写入 pending_review，管理端审核发布后用户面可见。
+      x-implementation-status: planned
+      security:
+        - AgentId: []
+          AgentSignature: []
+          AgentTimestamp: []
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseCandidateSubmission'
+      responses:
+        '201':
+          description: 案例候选已提交
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseCandidate'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
 components:
+  securitySchemes:
+    UserSession:
+      type: apiKey
+      in: cookie
+      name: wa_session
+      description: GitCode OAuth 登录后的用户会话。
+    AdminSession:
+      type: apiKey
+      in: cookie
+      name: wa_admin_session
+      description: GitCode OAuth + RBAC 后的管理员会话；本地临时用 x-admin-id 模拟。
+    AgentId:
+      type: apiKey
+      in: header
+      name: x-agent-id
+      description: 内部 Agent 客户端 ID。
+    AgentSignature:
+      type: apiKey
+      in: header
+      name: x-agent-signature
+      description: 内部 Agent 请求签名，密钥存 DEW/CSMS，不写入仓库。
+    AgentTimestamp:
+      type: apiKey
+      in: header
+      name: x-agent-timestamp
+      description: 签名时间戳，用于防重放。
+
   parameters:
     Slug:
       name: slug
@@ -329,6 +600,12 @@ components:
       in: path
       required: true
       schema: { type: string }
+    IdempotencyKey:
+      name: x-idempotency-key
+      in: header
+      required: true
+      schema: { type: string }
+      description: 写接口幂等键，避免定时任务重试造成重复候选。
 
   responses:
     ValidationError:
@@ -364,6 +641,175 @@ components:
       properties:
         error: { type: string }
         message: { type: string }
+
+    AdminMeResponse:
+      type: object
+      required: [admin_id, roles, permissions]
+      properties:
+        admin_id: { type: string }
+        gitcode_username: { type: string }
+        roles:
+          type: array
+          items: { type: string }
+        permissions:
+          type: array
+          items: { type: string }
+
+    CandidateStatus:
+      type: string
+      enum: [pending_review, approved, rejected, merged]
+
+    ModelMeta:
+      type: object
+      required: [provider, model, prompt_version, generated_at]
+      properties:
+        provider: { type: string, example: Huawei Cloud Pangu }
+        model: { type: string }
+        prompt_version: { type: string }
+        generated_at: { type: string, format: date-time }
+
+    CandidateProvenance:
+      type: object
+      required: [source_url, source_vendor, crawl_run_id]
+      properties:
+        source_url: { type: string }
+        source_vendor: { type: string }
+        crawl_run_id: { type: string }
+        raw_snapshot_url: { type: string }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        model_meta:
+          $ref: '#/components/schemas/ModelMeta'
+
+    CreateCrawlRunRequest:
+      type: object
+      required: [source_type, started_at]
+      properties:
+        source_type: { type: string, enum: [skill, news, case, mixed] }
+        started_at: { type: string, format: date-time }
+        source_count: { type: integer }
+
+    CrawlRun:
+      type: object
+      required: [id, source_type, status, started_at]
+      properties:
+        id: { type: string }
+        source_type: { type: string }
+        status: { type: string, enum: [running, succeeded, failed, partial] }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        stats:
+          type: object
+          additionalProperties: true
+
+    SkillCandidateSubmission:
+      type: object
+      required: [name, slug, vendor_name, category_tags, difficulty_lv, importance, doc, provenance]
+      properties:
+        name: { type: string }
+        slug: { type: string }
+        vendor_name: { type: string }
+        vendor_type: { type: string }
+        logo_url: { type: string }
+        category_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        difficulty_lv: { type: integer, minimum: 1, maximum: 100 }
+        importance:
+          $ref: '#/components/schemas/Importance'
+        doc:
+          $ref: '#/components/schemas/SkillDoc'
+        related_news:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        provenance:
+          $ref: '#/components/schemas/CandidateProvenance'
+
+    SkillCandidate:
+      allOf:
+        - $ref: '#/components/schemas/SkillCandidateSubmission'
+        - type: object
+          required: [id, status, created_at]
+          properties:
+            id: { type: string }
+            status:
+              $ref: '#/components/schemas/CandidateStatus'
+            review_note: { type: string }
+            created_at: { type: string, format: date-time }
+
+    NewsCandidateSubmission:
+      type: object
+      required: [title, summary, source_url, provenance]
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        source_url: { type: string }
+        published_at: { type: string, format: date-time }
+        related_skill_slug: { type: string }
+        provenance:
+          $ref: '#/components/schemas/CandidateProvenance'
+
+    NewsCandidate:
+      allOf:
+        - $ref: '#/components/schemas/NewsCandidateSubmission'
+        - type: object
+          required: [id, status, created_at]
+          properties:
+            id: { type: string }
+            status:
+              $ref: '#/components/schemas/CandidateStatus'
+            review_note: { type: string }
+            created_at: { type: string, format: date-time }
+
+    CaseCandidateSubmission:
+      type: object
+      required: [name, slug, scenario_desc, skill_slugs, category_tags, difficulty_lv, importance, provenance]
+      properties:
+        name: { type: string }
+        slug: { type: string }
+        scenario_desc: { type: string }
+        skill_slugs:
+          type: array
+          items: { type: string }
+        category_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        difficulty_lv: { type: integer, minimum: 1, maximum: 100 }
+        importance:
+          $ref: '#/components/schemas/Importance'
+        provenance:
+          $ref: '#/components/schemas/CandidateProvenance'
+
+    CaseCandidate:
+      allOf:
+        - $ref: '#/components/schemas/CaseCandidateSubmission'
+        - type: object
+          required: [id, status, created_at]
+          properties:
+            id: { type: string }
+            status:
+              $ref: '#/components/schemas/CandidateStatus'
+            review_note: { type: string }
+            created_at: { type: string, format: date-time }
+
+    CandidateReviewRequest:
+      type: object
+      properties:
+        review_note: { type: string }
+        publish_slug: { type: string }
+
+    CandidateReviewResponse:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string }
+        status:
+          $ref: '#/components/schemas/CandidateStatus'
+        published_slug: { type: string }
+        review_note: { type: string }
 
     Label:
       type: object

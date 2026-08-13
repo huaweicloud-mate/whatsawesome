@@ -98,6 +98,22 @@ npm run dev
 - 错误响应统一是 `{ error, message }`。
 - 管理端本地临时用请求头 `x-admin-id: admin-founder` 或 `x-admin-id: admin-secretary`，正式版本会替换为 GitCode OAuth + RBAC。
 
+三类接口面:
+
+| 接口面 | 路径 | 调用方 | 权限原则 |
+|---|---|---|---|
+| 用户面 | `/api/*` | 玩家端、普通玩家 Agent | 只能看 published 内容，只能操作自己的点亮/主页 |
+| 管理面 | `/api/admin/*` | 管理端，仅 2 个管理员 | 服务端 RBAC + 审计；用户面知道路径也必须返回 `403` |
+| 内部 Agent | `/api/agent/*` | 技能 Agent、定时爬虫、内容生成函数 | 服务到服务鉴权 + 幂等键；不开放浏览器 CORS |
+
+AI 定时任务提交规则:
+
+- 技能 Agent 不调用 `/api/admin/*`，因为管理面 API 代表人类管理员的审核权。
+- 定时爬虫/内容生成函数提交到 `/api/agent/skill-candidates`、`/api/agent/news-candidates`、`/api/agent/case-candidates`。
+- Agent 提交的数据默认是 `pending_review` 或 `draft`，玩家端不可见。
+- 管理端再从 `/api/admin/*-candidates` 拉取候选，人工 `approve/reject` 后才发布。
+- Agent 写接口必须带 `idempotency_key`、`source_url`、`crawl_run_id`、`model_meta`，方便去重和审计。
+
 最小联调用例:
 
 ```bash
@@ -128,7 +144,8 @@ curl http://localhost:8000/api/players/player_1/profile
 
 - 前端 Agent: 只按 OpenAPI 调接口，不直接读 `backend/data/*.json`。
 - 裁判 Agent: 迭代三 MCP 工具内部应复用 `quest` 点亮流水，不另造一套点亮记录。
-- 技能 Agent: 生成技能/案例时先作为 `draft` 候选，未来走管理审核接口露出。
+- 技能 Agent: 生成技能/案例/资讯时只调用 `/api/agent/*` 提交候选，不调用 `/api/admin/*`。
+- 管理端 Agent: 只调用 `/api/admin/*`，负责审核、编辑、发布、驳回和审计查看。
 - QA Agent: 以 `backend/test/iteration2-api.test.js` 作为后端冒烟基线，新增接口时同步补测试。
 - 后端 Agent: 新增/修改接口后，必须同步更新 `05-backend-api-openapi.yaml` 和 `06-backend-development-plan.md`。
 

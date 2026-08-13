@@ -69,7 +69,60 @@ Frontend SPA
 | 审计日志 | CTS + LTS | 管理审核、MCP 点亮、AI 生成可追溯 |
 | 监控告警 | Cloud Eye + SMN | 函数失败、爬虫失败、判定服务异常告警 |
 
-## 4. 接口分期规划
+## 4. 鉴权与接口隔离
+
+后端必须拆成三类接口面，不能让用户面或 AI Agent 复用管理员权限。
+
+| 接口面 | 路径前缀 | 调用方 | 鉴权方式 | 暴露策略 |
+|---|---|---|---|---|
+| 用户面 API | `/api/*` | 玩家端前端、普通玩家 Agent | GitCode OAuth 用户会话 / 玩家令牌 | 只读 published 内容；玩家只能操作自己的点亮与主页 |
+| 管理面 API | `/api/admin/*` | 管理端前端，仅 2 个管理员 | GitCode OAuth + 服务端 RBAC 白名单 + 管理审计 | 可公开到管理端域名，但必须服务端校验 admin role |
+| 内部 Agent API | `/api/agent/*` | 技能 Agent、定时爬虫、内容生成函数 | APIG App/IAM/FunctionGraph Agency + HMAC 签名 + 幂等键 | 不给浏览器 CORS；优先走内网或独立 APIG 应用 |
+
+关键规则:
+
+- 管理端接口不靠“前端隐藏按钮”防护，所有 `/api/admin/*` 都必须在服务端做 RBAC。
+- 用户面即使知道 `/api/admin/*` 路径，也只能拿到 `403`。
+- AI 定时任务不调用 `/api/admin/*`，只调用 `/api/agent/*` 提交候选内容。
+- `/api/agent/*` 写入的数据默认是 `pending_review` 或 `draft`，不会直接发布到玩家端。
+- 所有管理审核、AI 提交、自动去重、发布/驳回都写 `admin_audit_log` 或对应审计事件。
+- Agent 写接口必须支持 `idempotency_key`，避免定时任务重试造成重复技能或资讯。
+
+## 5. AI 定时读取 Skill/资讯后的提交链路
+
+推荐链路:
+
+```text
+FunctionGraph Timer
+  -> skill-crawler function
+  -> 抓取官方源/可信源
+  -> 盘古大模型摘要、打标、重要性评分
+  -> POST /api/agent/skill-candidates
+  -> POST /api/agent/news-candidates
+  -> GaussDB 写入 draft/pending_review
+  -> 管理面 GET /api/admin/*-candidates
+  -> 管理员审核 publish/reject
+  -> 玩家端 GET /api/skills /api/news 只看到 published
+```
+
+提交内容必须带上:
+
+- `source_url`: 原始来源 URL。
+- `source_vendor`: 来源厂商或媒体。
+- `crawl_run_id`: 本次抓取批次。
+- `idempotency_key`: 幂等键，建议按 `source_url + published_at + title hash` 生成。
+- `ai_summary` / `doc` / `importance`: AI 生成内容。
+- `model_meta`: 模型、提示词版本、生成时间。
+- `confidence`: AI 对候选质量的置信度。
+- `raw_snapshot_url`: 可选，原始页面快照或正文存 OBS 后的引用。
+
+为什么不让 AI 调管理面 API:
+
+- 管理面 API 代表人类管理员的审核权，AI 不应该持有这类权限。
+- AI 采集结果需要人工裁量，特别是“是否值得露出给玩家攻克”。
+- 分离后可以独立限流、审计和熔断 `/api/agent/*`，不会影响管理端操作。
+
+## 6. 接口分期规划
 
 ### v0.2 当前已暴露接口
 
@@ -88,12 +141,13 @@ Frontend SPA
 | POST | `/api/quests/manual` | 前端 | 手工点亮申请 |
 | POST | `/api/admin/quests/{id}/review` | 管理端 | 审核点亮申请 |
 
-### v0.3 数据库与上传
+### v0.3 数据库、上传与管理审核台
 
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
 | POST | `/api/uploads/presign` | 前端 | 获取 OBS 预签名上传 URL |
 | GET | `/api/admin/quests` | 管理端 | 待审核申请列表，支持分页筛选 |
+| GET | `/api/admin/me` | 管理端 | 当前管理员身份与权限 |
 | GET | `/api/badges` | 前端 / 管理端 | 勋章定义列表 |
 | GET | `/api/players/{id}/quests` | 前端 | 玩家点亮历史 |
 | POST | `/api/auth/gitcode/callback` | GitCode OAuth | 登录回调，创建玩家会话 |
@@ -104,27 +158,37 @@ Frontend SPA
 
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
-| POST | `/api/admin/skills` | 管理端 / 技能 Agent | 创建技能候选 |
+| GET | `/api/admin/skill-candidates` | 管理端 | 技能 Agent 提交的候选列表 |
+| POST | `/api/admin/skill-candidates/{id}/approve` | 管理端 | 审核通过候选，生成/更新 published 技能 |
+| POST | `/api/admin/skill-candidates/{id}/reject` | 管理端 | 驳回候选并记录原因 |
+| POST | `/api/admin/skills` | 管理端 | 人工创建技能 |
 | PATCH | `/api/admin/skills/{slug}` | 管理端 | 编辑技能 |
 | POST | `/api/admin/skills/{slug}/publish` | 管理端 | 露出技能 |
 | POST | `/api/admin/skills/{slug}/archive` | 管理端 | 下架技能 |
-| POST | `/api/admin/cases` | 管理端 / 技能 Agent | 创建案例候选 |
+| GET | `/api/admin/case-candidates` | 管理端 | AI/人工生成的案例候选列表 |
+| POST | `/api/admin/case-candidates/{id}/approve` | 管理端 | 审核通过候选，生成/更新 published 案例 |
+| POST | `/api/admin/case-candidates/{id}/reject` | 管理端 | 驳回候选并记录原因 |
+| POST | `/api/admin/cases` | 管理端 | 人工创建案例 |
 | PATCH | `/api/admin/cases/{slug}` | 管理端 | 编辑案例 |
 | POST | `/api/admin/cases/{slug}/publish` | 管理端 | 露出案例 |
 | POST | `/api/admin/badges` | 管理端 | 创建勋章规则 |
 | PATCH | `/api/admin/badges/{key}` | 管理端 | 更新勋章规则 |
+| GET | `/api/admin/news-candidates` | 管理端 | 资讯候选列表 |
+| POST | `/api/admin/news-candidates/{id}/publish` | 管理端 | 发布资讯 |
+| POST | `/api/admin/news-candidates/{id}/reject` | 管理端 | 驳回资讯 |
 | GET | `/api/admin/audit-logs` | 管理端 | 管理操作审计 |
 
 ### v0.5 技能 Agent 与资讯
 
 | Method | Path | 调用方 | 说明 |
 |---|---|---|---|
+| POST | `/api/agent/crawl-runs` | 技能 Agent | 创建抓取批次 |
 | POST | `/api/agent/skill-candidates` | 技能 Agent | 提交技能候选 |
 | POST | `/api/agent/case-candidates` | 技能 Agent | 提交案例候选 |
-| POST | `/api/agent/news` | 技能 Agent | 写入资讯摘要 |
+| POST | `/api/agent/news-candidates` | 技能 Agent | 提交资讯候选 |
+| PATCH | `/api/agent/crawl-runs/{id}` | 技能 Agent | 更新抓取批次结果 |
 | GET | `/api/news` | 前端 | 资讯列表 |
 | GET | `/api/news/{id}` | 前端 | 资讯详情 |
-| POST | `/api/admin/news/{id}/publish` | 管理端 | 发布资讯 |
 
 ### v0.6 裁判 Agent 与 MCP
 
@@ -143,7 +207,7 @@ MCP 工具建议:
 - `light_up_skill(skill_slug, player_token, judge_result)`
 - `light_up_case(case_slug, player_token, judge_result)`
 
-## 5. 数据库规划
+## 7. 数据库规划
 
 已提交 GaussDB 基线表:
 
@@ -157,6 +221,14 @@ MCP 工具建议:
 - `difficulty_stage`
 - `admin_audit_log`
 
+下一版需要新增或细化:
+
+- `skill_candidate`: 技能 Agent 候选，状态为 `pending_review/approved/rejected/merged`。
+- `case_candidate`: 案例候选。
+- `news_candidate`: 资讯候选。
+- `crawl_run`: 每日抓取批次、来源统计、失败原因。
+- `agent_client`: 内部 Agent 客户端登记，保存非明文密钥引用、权限范围、状态。
+
 建模原则:
 
 - 强查询字段用普通列，例如 `slug`、`status`、`difficulty_lv`、`gitcode_id`。
@@ -164,18 +236,20 @@ MCP 工具建议:
 - 点亮以 `quest_log` 为事件流，个人主页由后端聚合。
 - 技能、案例、资讯之间使用弱引用 `slug`，降低迭代耦合。
 
-## 6. 开发优先级
+## 8. 开发优先级
 
 1. 把当前 `server.js` 拆成领域模块和 repository 接口，保持测试不变。
-2. 接入 GaussDB 本地/云上连接，替换内存 store。
-3. 实现 GitCode OAuth callback 与 `GET /api/me`。
-4. 实现 OBS 预签名上传，完成手工点亮真实证据链路。
-5. 补管理面技能/案例/勋章/资讯 CRUD。
-6. 接入技能 Agent 写入候选内容。
-7. 接入裁判 Agent 与 MCP 自动点亮。
-8. 做 FunctionGraph 部署适配，把 Express handler 拆成可部署函数。
+2. 先实现管理面鉴权骨架: `GET /api/admin/me`、admin RBAC middleware、审计日志。
+3. 实现管理面审核台: `GET /api/admin/quests`、候选技能/资讯/案例审核接口。
+4. 实现 `/api/agent/*` 内部提交接口和幂等去重。
+5. 接入 GaussDB 本地/云上连接，替换内存 store。
+6. 实现 GitCode OAuth callback 与 `GET /api/me`。
+7. 实现 OBS 预签名上传，完成手工点亮真实证据链路。
+8. 补管理面技能/案例/勋章/资讯 CRUD。
+9. 接入裁判 Agent 与 MCP 自动点亮。
+10. 做 FunctionGraph 部署适配，把 Express handler 拆成可部署函数。
 
-## 7. 华为云操作规则
+## 9. 华为云操作规则
 
 所有华为云操作必须遵守:
 
@@ -186,7 +260,7 @@ MCP 工具建议:
 - OBS 使用 `hcloud OBS help` 体系，先同步 OBS 配置，不用 API 风格命令乱拼。
 - 不读取、不打印 AK/SK、OAuth secret、数据库密码、模型 API Key。
 
-## 8. 当前验收口径
+## 10. 当前验收口径
 
 第一稿后端验收命令:
 
