@@ -1,0 +1,38 @@
+{
+  "badges": [
+    {
+      "key": "first_light",
+      "name": "第一盏星灯",
+      "title": "筑基初成",
+      "icon": "基",
+      "description": "首次点亮任意技能或案例。",
+      "rule": {
+        "type": "total_lit",
+        "threshold": 1
+      }
+    },
+    {
+      "key": "skill_collector_3",
+      "name": "万法初窥",
+      "title": "三术入门",
+      "icon": "叁",
+      "description": "累计点亮 3 个技能。",
+      "rule": {
+        "type": "skill_count",
+        "threshold": 3
+      }
+    },
+    {
+      "key": "huawei_cloud_master_80",
+      "name": "华为云通关达人",
+      "title": "云上通玄",
+      "icon": "云",
+      "description": "点亮已收录华为云技能的 80% 以上。",
+      "rule": {
+        "type": "vendor_coverage",
+        "vendor_name": "Huawei Cloud",
+        "threshold": 0.8
+      }
+    }
+  ]
+}

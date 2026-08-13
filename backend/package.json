@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Whats Awesome 迭代一:技能对象 API(后续迁移华为云 FunctionGraph)",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "cors": "^2.8.5",

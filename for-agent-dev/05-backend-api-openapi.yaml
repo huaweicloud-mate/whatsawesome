@@ -1,0 +1,631 @@
+openapi: 3.0.3
+info:
+  title: Whats Awesome Backend API
+  version: 0.2.0
+  description: |
+    Whats Awesome 后端标准接口文档。
+
+    当前实现为 Node Express 本地骨架，接口契约对齐后续华为云 APIG + FunctionGraph + GaussDB。
+    迭代二已覆盖玩家档案、案例、手工点亮、管理员审核、勋章发放和个人主页聚合。
+servers:
+  - url: http://localhost:8000
+    description: Local backend
+tags:
+  - name: Health
+  - name: Meta
+  - name: Skill
+  - name: Case
+  - name: Player
+  - name: Quest
+  - name: Admin
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: 健康检查
+      responses:
+        '200':
+          description: 服务可用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/meta/stages:
+    get:
+      tags: [Meta]
+      summary: 获取 Boss Lv 八境映射
+      responses:
+        '200':
+          description: 境界列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [stages]
+                properties:
+                  stages:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DifficultyStage'
+
+  /api/meta/labels:
+    get:
+      tags: [Meta]
+      summary: 获取标签字典
+      responses:
+        '200':
+          description: 标签列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [labels]
+                properties:
+                  labels:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Label'
+
+  /api/skills:
+    get:
+      tags: [Skill]
+      summary: 获取已发布技能列表
+      parameters:
+        - name: tag
+          in: query
+          schema: { type: string }
+          description: 标签 key
+        - name: min_lv
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: max_lv
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: q
+          in: query
+          schema: { type: string }
+          description: 搜索技能名、厂商或简介
+      responses:
+        '200':
+          description: 技能卡片列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SkillCard'
+
+  /api/skills/{slug}:
+    get:
+      tags: [Skill]
+      summary: 获取技能详情
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: 技能详情，包含完整 Doc
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/cases:
+    get:
+      tags: [Case]
+      summary: 获取已发布案例列表
+      parameters:
+        - name: tag
+          in: query
+          schema: { type: string }
+          description: 标签 key
+        - name: q
+          in: query
+          schema: { type: string }
+          description: 搜索案例名或场景说明
+      responses:
+        '200':
+          description: 案例卡片列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CaseCard'
+
+  /api/cases/{slug}:
+    get:
+      tags: [Case]
+      summary: 获取案例详情
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        '200':
+          description: 案例详情，包含组合技能卡片
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/players:
+    post:
+      tags: [Player]
+      summary: 创建或更新玩家档案
+      description: |
+        迭代二本地实现直接接收 GitCode 用户资料。
+        正式云上版本由 GitCode OAuth callback 换取用户信息后调用同一领域逻辑。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlayerRequest'
+      responses:
+        '201':
+          description: 新玩家已创建
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [player]
+                properties:
+                  player:
+                    $ref: '#/components/schemas/Player'
+        '200':
+          description: 已存在玩家被更新
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [player]
+                properties:
+                  player:
+                    $ref: '#/components/schemas/Player'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/players/{id}/profile:
+    get:
+      tags: [Player]
+      summary: 获取玩家个人主页聚合数据
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: 玩家主页数据
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerProfile'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/quests:
+    get:
+      tags: [Quest]
+      summary: 查询闯关/点亮申请流水
+      parameters:
+        - name: player_id
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/JudgeStatus'
+      responses:
+        '200':
+          description: 闯关申请列表
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total, items]
+                properties:
+                  total: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Quest'
+
+  /api/quests/manual:
+    post:
+      tags: [Quest]
+      summary: 提交手工点亮申请
+      description: |
+        玩家提交截图、日志或作品链接等证据。文件正式版本走 OBS 预签名 URL 上传，
+        本接口只保存 evidence 元数据。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitManualQuestRequest'
+      responses:
+        '201':
+          description: 申请已进入 pending
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [quest]
+                properties:
+                  quest:
+                    $ref: '#/components/schemas/Quest'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/admin/quests/{id}/review:
+    post:
+      tags: [Admin]
+      summary: 管理员审核点亮申请
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - name: x-admin-id
+          in: header
+          required: true
+          schema: { type: string }
+          description: |
+            迭代二本地白名单: admin-founder / admin-secretary。
+            正式版本由 GitCode OAuth + RBAC 注入管理员身份。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewQuestRequest'
+      responses:
+        '200':
+          description: 审核完成。通过时可能返回新发放勋章。
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [quest, granted_badges]
+                properties:
+                  quest:
+                    $ref: '#/components/schemas/Quest'
+                  granted_badges:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Badge'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: 申请已经审核过
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema: { type: string }
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    ValidationError:
+      description: 请求参数不合法
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: 没有权限
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [ok, service]
+      properties:
+        ok: { type: boolean }
+        service: { type: string }
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }
+
+    Label:
+      type: object
+      required: [key, label]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        category: { type: string }
+        type: { type: string, enum: [domain, vendor] }
+
+    DifficultyStage:
+      type: object
+      required: [stage, min_lv, max_lv]
+      properties:
+        stage: { type: string }
+        name: { type: string }
+        min_lv: { type: integer }
+        max_lv: { type: integer }
+        icon: { type: string }
+        color: { type: string }
+        desc: { type: string }
+
+    StageView:
+      type: object
+      nullable: true
+      properties:
+        name: { type: string }
+        icon: { type: string }
+        color: { type: string }
+        desc: { type: string }
+
+    Importance:
+      type: object
+      required: [score, basis]
+      properties:
+        score: { type: number, minimum: 0, maximum: 10 }
+        basis: { type: string }
+        evaluated_at: { type: string }
+
+    SkillCard:
+      type: object
+      required:
+        - slug
+        - name
+        - vendor_name
+        - category_tags
+        - difficulty_lv
+        - importance
+        - summary
+        - status
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        vendor_name: { type: string }
+        vendor_type: { type: string }
+        logo_url: { type: string }
+        category_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        difficulty_lv: { type: integer, minimum: 1, maximum: 100 }
+        stage:
+          $ref: '#/components/schemas/StageView'
+        importance:
+          $ref: '#/components/schemas/Importance'
+        summary: { type: string }
+        status: { type: string, enum: [draft, published, archived] }
+
+    SkillDoc:
+      type: object
+      required: [summary, official_url, repo_url, ecosystem, hello_world, learning_prompt]
+      properties:
+        summary: { type: string }
+        official_url: { type: string }
+        repo_url: { type: string }
+        ecosystem: { type: string }
+        hello_world: { type: string }
+        learning_prompt: { type: string }
+
+    SkillDetail:
+      allOf:
+        - $ref: '#/components/schemas/SkillCard'
+        - type: object
+          required: [doc]
+          properties:
+            doc:
+              $ref: '#/components/schemas/SkillDoc'
+            related_news:
+              type: array
+              items:
+                type: object
+                properties:
+                  title: { type: string }
+                  url: { type: string }
+                  date: { type: string }
+
+    CaseCard:
+      type: object
+      required: [slug, name, scenario_desc, source, skill_slugs, difficulty_lv, importance, status]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        scenario_desc: { type: string }
+        source: { type: string, enum: [ai_generated, manual] }
+        skill_slugs:
+          type: array
+          items: { type: string }
+        category_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+        difficulty_lv: { type: integer, minimum: 1, maximum: 100 }
+        stage:
+          $ref: '#/components/schemas/StageView'
+        importance:
+          $ref: '#/components/schemas/Importance'
+        status: { type: string, enum: [draft, published, archived] }
+
+    CaseDetail:
+      allOf:
+        - $ref: '#/components/schemas/CaseCard'
+        - type: object
+          properties:
+            skills:
+              type: array
+              items:
+                $ref: '#/components/schemas/SkillCard'
+
+    CreatePlayerRequest:
+      type: object
+      required: [gitcode_id, gitcode_username]
+      properties:
+        gitcode_id: { type: string }
+        gitcode_username: { type: string }
+        avatar_url: { type: string }
+
+    Player:
+      type: object
+      required: [id, gitcode_id, gitcode_username, role, badges, growth]
+      properties:
+        id: { type: string }
+        gitcode_id: { type: string }
+        gitcode_username: { type: string }
+        avatar_url: { type: string }
+        role: { type: string, enum: [player, admin] }
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+        growth:
+          $ref: '#/components/schemas/Growth'
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Growth:
+      type: object
+      required: [realm, exp, total_lit, lit_skill_slugs, lit_case_slugs]
+      properties:
+        realm: { type: string }
+        exp: { type: integer }
+        total_lit: { type: integer }
+        lit_skill_slugs:
+          type: array
+          items: { type: string }
+        lit_case_slugs:
+          type: array
+          items: { type: string }
+
+    Badge:
+      type: object
+      required: [key, name, title, icon, description, granted_at]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        title: { type: string }
+        icon: { type: string }
+        description: { type: string }
+        granted_at: { type: string, format: date-time }
+
+    Evidence:
+      type: object
+      required: [description]
+      properties:
+        description: { type: string }
+        file_url: { type: string, description: OBS object URL or signed object reference }
+        artifact_url: { type: string }
+        repository_url: { type: string }
+        extra:
+          type: object
+          additionalProperties: true
+
+    TargetType:
+      type: string
+      enum: [skill, case]
+
+    JudgeStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    Quest:
+      type: object
+      required: [id, player_id, target_type, target_slug, method, evidence, judge_status]
+      properties:
+        id: { type: string }
+        player_id: { type: string }
+        target_type:
+          $ref: '#/components/schemas/TargetType'
+        target_slug: { type: string }
+        method:
+          type: string
+          enum: [manual_upload, mcp_auto, admin_grant]
+        evidence:
+          $ref: '#/components/schemas/Evidence'
+        judge_status:
+          $ref: '#/components/schemas/JudgeStatus'
+        judged_by: { type: string }
+        judge_note: { type: string }
+        lit_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    SubmitManualQuestRequest:
+      type: object
+      required: [player_id, target_type, target_slug, evidence]
+      properties:
+        player_id: { type: string }
+        target_type:
+          $ref: '#/components/schemas/TargetType'
+        target_slug: { type: string }
+        evidence:
+          $ref: '#/components/schemas/Evidence'
+
+    ReviewQuestRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        judge_note: { type: string }
+
+    PlayerProfile:
+      type: object
+      required: [player, growth, badges, lit_skills, lit_cases, recent_quests]
+      properties:
+        player:
+          $ref: '#/components/schemas/Player'
+        growth:
+          $ref: '#/components/schemas/Growth'
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+        lit_skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillCard'
+        lit_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/CaseCard'
+        recent_quests:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quest'

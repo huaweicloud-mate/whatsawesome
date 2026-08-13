@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "name": "灵犀技能雷达",
+      "slug": "skill-radar",
+      "scenario_desc": "用 FunctionGraph 定时抓取技能资讯，调用盘古大模型摘要与打分，写入 GaussDB，并在前端展示为今日灵讯。",
+      "source": "manual",
+      "skill_slugs": [
+        "huawei-functiongraph",
+        "huawei-pangu-api",
+        "huawei-gaussdb"
+      ],
+      "category_tags": [
+        { "key": "serverless", "label": "Serverless 无服务器" },
+        { "key": "llm", "label": "大模型 LLM" },
+        { "key": "database", "label": "数据库" }
+      ],
+      "difficulty_lv": 42,
+      "importance": {
+        "score": 9.2,
+        "basis": "覆盖本项目最核心的技能采集、AI 摘要和数据落库链路，是技能 Agent 的基础场景。",
+        "evaluated_at": "2026-08-13"
+      },
+      "status": "published"
+    },
+    {
+      "name": "MCP 自动闯关裁判",
+      "slug": "mcp-auto-judge",
+      "scenario_desc": "构建 MCP Server，让玩家 Agent 提交技能试炼证据，由裁判函数判定后自动点亮技能。",
+      "source": "manual",
+      "skill_slugs": [
+        "mcp",
+        "huawei-functiongraph",
+        "huawei-obs"
+      ],
+      "category_tags": [
+        { "key": "mcp", "label": "MCP 模型上下文协议" },
+        { "key": "ai-agent", "label": "AI Agent" },
+        { "key": "object-storage", "label": "对象存储" }
+      ],
+      "difficulty_lv": 58,
+      "importance": {
+        "score": 9.6,
+        "basis": "MCP 是本项目自动化闯关的关键协议，结合 FunctionGraph 与 OBS 可形成完整裁判闭环。",
+        "evaluated_at": "2026-08-13"
+      },
+      "status": "published"
+    }
+  ]
+}

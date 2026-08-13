@@ -18,14 +18,17 @@ Whats Awesome 是一个团队技能养成游戏化平台: 团队成员在这里�
 
 ## 1. 当前仓库现状
 
-本仓库已经不是空仓。当前代码处于“迭代一技能对象骨架”状态:
+本仓库已经不是空仓。当前代码处于“迭代一技能对象 + 迭代二后端先行骨架”状态:
 
 | 区域 | 当前内容 | 说明 |
 |---|---|---|
 | `frontend/` | Vue 3 + Vite + Element Plus | 已有技能大厅和技能详情页 |
 | `backend/` | Node Express API | 读取本地 JSON 种子数据，接口契约对齐后续 FunctionGraph |
-| `backend/data/` | 技能、标签、境界种子数据 | 后续迁移到 GaussDB 表 |
+| `backend/data/` | 技能、案例、勋章、标签、境界种子数据 | 后续迁移到 GaussDB 表 |
+| `backend/db/migrations/` | GaussDB 初始化 SQL | 后续创建云上实例后执行 |
+| `backend/test/` | Node 内置测试 | 覆盖技能兼容、玩家、案例、点亮、审核、勋章 |
 | `for-agent-dev/` | 项目规格、系统设计、任务清单、标签体系 | 所有 Agent 的协作资料区 |
+| `for-agent-dev/05-backend-api-openapi.yaml` | 后端 OpenAPI 文档 | 前端 / 裁判 / QA Agent 按此对接 |
 | `for-agent-dev/ux/` | 玩家端/管理端高保真原型与设计交付 | UX 最新版本在这里，不在根目录 `ux/` |
 | `qa-playwright-capture.sh` | 截图 QA 脚本 | 供后续 UI 验收使用 |
 
@@ -72,6 +75,15 @@ npm run dev
 | GET | `/api/skills/:slug` | 技能详情 |
 | GET | `/api/meta/stages` | 八境难度映射 |
 | GET | `/api/meta/labels` | 标签字典 |
+| GET | `/api/cases` | 案例列表 |
+| GET | `/api/cases/:slug` | 案例详情 |
+| POST | `/api/players` | 创建或更新玩家档案 |
+| GET | `/api/players/:id/profile` | 玩家个人主页聚合 |
+| GET | `/api/quests?player_id=&status=` | 闯关申请流水 |
+| POST | `/api/quests/manual` | 提交手工点亮申请 |
+| POST | `/api/admin/quests/:id/review` | 管理员审核点亮申请 |
+
+标准接口文档见 `for-agent-dev/05-backend-api-openapi.yaml`。
 
 ## 4. 六类 Agent 分工
 
